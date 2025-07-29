@@ -391,3 +391,10 @@ dmypy.json
 .pyre/
 
 # End of https://www.gitignore.io/api/c,c++,node,java,python,intellij,netbeans
+
+# Virtual Environment Directories
+venv/
+env/
+ENV/
+.venv/
+.env/
