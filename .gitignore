@@ -398,3 +398,4 @@ env/
 ENV/
 .venv/
 .env/
+fin_proj_credits__raw.csv
