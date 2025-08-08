@@ -1,0 +1,29 @@
+/* Theme variables and a couple of utility styles scoped to this app */
+.sf-theme {
+  --color-primary: #29B5E8;
+  --color-midnight: #000000;
+  --color-mid-blue: #11567F;
+  --color-medium-gray: #5B5B5B;
+  --color-star-blue: #75CDD7;
+  --color-valencia-orange: #FF9F36;
+  --color-first-light: #D45B90;
+  --color-purple-moon: #7254A3;
+  --panel: #ffffff;
+  --panel-2: #ffffff;
+  --panel-3: #F7FAFD;
+  --border: #E5E7EB;
+  --muted: #5B5B5B;
+  --text: #0F172A;
+  --subtle-text: #334155;
+  --white: #ffffff;
+}
+
+/* Optional: small shadow for inline AI row focus ring parity */
+.sf-ai-row {
+  box-shadow: 0 0 0 1px rgba(41, 181, 232, 0.25);
+}
+
+/* Tooltip bubble caret alignment helper */
+.sf-tooltip-caret {
+  transform: translateX(-50%) rotate(45deg);
+}
