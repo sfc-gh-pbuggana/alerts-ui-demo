@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Bell, CheckCircle2, ChevronDown, LoaderCircle } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -10,6 +10,7 @@ import { ConditionBuilder } from "./condition-builder"
 import { TokenRow, TagToken, AddDestination } from "./notifications"
 import { SearchDestination } from "./search-destination"
 import { TemplateSearchList } from "./template-search-list"
+import { NoResultsCard, QueryResults } from "./results"
 
 function SectionHeader({ title }: { title: string }) {
   return <h3 className="text-base font-semibold mb-2">{title}</h3>
@@ -57,25 +58,107 @@ function AdvancedInner() {
   )
 }
 
-export function LeftPanel({ onApplyTemplate }: { onApplyTemplate: (name: string) => void }) {
+function RichTextEditor({ placeholder, value, onChange }: { placeholder: string; value?: string; onChange?: (value: string) => void }) {
+  const editorRef = useRef<HTMLDivElement | null>(null)
+  const [isEmpty, setIsEmpty] = useState(true)
+
+  useEffect(() => {
+    const node = editorRef.current
+    if (!node) return
+    const handler = () => {
+      const value = node.innerHTML
+      setIsEmpty(node.textContent?.trim() === "")
+      onChange?.(value)
+    }
+    node.addEventListener("input", handler)
+    return () => node.removeEventListener("input", handler)
+  }, [onChange])
+
+  useEffect(() => {
+    const node = editorRef.current
+    if (!node) return
+    if (value !== undefined) {
+      node.innerHTML = value
+      setIsEmpty(node.textContent?.trim() === "")
+    }
+  }, [value])
+
+  const format = (cmd: string) => {
+    document.execCommand(cmd)
+    editorRef.current?.focus()
+  }
+
+  return (
+    <div className="rounded-md border border-[var(--border)] bg-[var(--panel-2)]">
+      <div className="flex items-center gap-1 p-2 border-b border-[var(--border)]">
+        <Button size="sm" variant="outline" className="h-7 px-2" onClick={() => format("bold")} aria-label="Bold">B</Button>
+        <Button size="sm" variant="outline" className="h-7 px-2 italic" onClick={() => format("italic")} aria-label="Italic">I</Button>
+        <Button size="sm" variant="outline" className="h-7 px-2 underline" onClick={() => format("underline")} aria-label="Underline">U</Button>
+      </div>
+      <div className="relative">
+        {isEmpty && (
+          <div className="pointer-events-none absolute left-3 top-3 text-[var(--subtle-text)] text-sm">
+            {placeholder}
+          </div>
+        )}
+        <div
+          ref={editorRef}
+          contentEditable
+          className="min-h-28 outline-none p-3 text-sm text-[var(--text)]"
+          role="textbox"
+          aria-multiline="true"
+        />
+      </div>
+    </div>
+  )
+}
+
+function UserTiles({ users, onRemove }: { users: string[]; onRemove: (name: string) => void }) {
+  return (
+    <div className="min-h-[36px] flex flex-wrap gap-2">
+      {users.map((u) => (
+        <TagToken key={u} text={u} onRemove={() => onRemove(u)} />
+      ))}
+    </div>
+  )
+}
+
+export function LeftPanel({ onApplyTemplate, hasRun }: { onApplyTemplate: (name: string) => void; hasRun: boolean }) {
   const [showCron, setShowCron] = useState(false)
   const [testing, setTesting] = useState(false)
   const [testResult, setTestResult] = useState<"idle" | "true">("idle")
   const [destinations, setDestinations] = useState<string[]>(["Email", "Webhook Destination 2"])
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([])
   const [showAdvanced, setShowAdvanced] = useState(false)
+  const [showPreview, setShowPreview] = useState(false)
+  const [notificationBody, setNotificationBody] = useState("")
+  const notificationTemplates = [
+    { label: "Basic: Notify on failures", body: "<p>Alert: We detected <strong>{number_of_failures}</strong> failures in the last 24 hours.</p>" },
+    { label: "Detailed: Include timestamp", body: "<p>Alert triggered at {timestamp}. Failures: <strong>{number_of_failures}</strong>.</p>" },
+  ]
+  const PLACEHOLDER_NOTIFICATION = `<p><em>Notification preview placeholder</em></p><p>Use variables like <code>{number_of_failures}</code> and <code>{timestamp}</code> in your message.</p>`
 
   const addDestination = (name: string) => setDestinations((prev) => (prev.includes(name) ? prev : [...prev, name]))
   const removeDestination = (name: string) => setDestinations((prev) => prev.filter((d) => d !== name))
+  const addUser = (name: string) => setSelectedUsers((prev) => (prev.includes(name) ? prev : [...prev, name]))
+  const removeUser = (name: string) => setSelectedUsers((prev) => prev.filter((u) => u !== name))
 
   const TEMPLATES = [
+    { name: "Demo: Snowpipe Failure Check", date: "Today", description: "Detect failed Snowpipe events in the last 24 hours." },
     { name: "Finance & Economics - Examples", date: "7/2/25", description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor." },
-    { name: "Finance & Economics - Examples", date: "6/30/25", description: "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut." },
     { name: "Marketing KPI - Examples", date: "7/1/25", description: "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore." },
+  ]
+
+  // Populate user search options
+  const USER_OPTIONS = [
+    "ASILVER","BDAVIS","CBROWN","DWHITE","EJONES","FGREEN","GHARRIS","HCLARK","IJACKSON","JWILLIAMS",
+    "KADAMS","LLUCAS","MMILLER","NBAKER","OJOHNSON","PLEE","QROBERTS","RTHOMAS","SWILSON","TTAYLOR",
   ]
 
   return (
     <aside className="overflow-y-auto h-full bg-[var(--panel)]">
       <div className="p-4 sm:p-6 space-y-8">
+        {/* 1. Alert Center */}
         <section>
           <div className="flex items-center gap-2 mb-2">
             <Bell className="h-4 w-4 text-[var(--color-mid-blue)]" />
@@ -87,6 +170,23 @@ export function LeftPanel({ onApplyTemplate }: { onApplyTemplate: (name: string)
           </p>
         </section>
 
+        {/* 2. Load from Template */}
+        <section className="space-y-2">
+          <SectionHeader title="Load from Template" />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="h-9 border-[var(--border)] bg-[var(--panel-2)] text-[var(--text)]">
+                Browse available query templates
+                <ChevronDown className="ml-2 h-4 w-4 text-[var(--subtle-text)]" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="bg-white text-[var(--text)] border-[var(--border)] p-2 w-[520px]">
+              <TemplateSearchList templates={TEMPLATES} onSelect={(t) => onApplyTemplate(t.name)} />
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </section>
+
+        {/* 3. Condition */}
         <section>
           <SectionHeader title="Condition" />
           <ConditionBuilder />
@@ -120,19 +220,9 @@ export function LeftPanel({ onApplyTemplate }: { onApplyTemplate: (name: string)
           </div>
         </section>
 
-        <section className="space-y-2">
-          <SectionHeader title="Load from Template" />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="h-9 border-[var(--border)] bg-[var(--panel-2)] text-[var(--text)]">
-                Browse available query templates
-                <ChevronDown className="ml-2 h-4 w-4 text-[var(--subtle-text)]" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-white text-[var(--text)] border-[var(--border)] p-2 w-[520px]">
-              <TemplateSearchList templates={TEMPLATES} onSelect={(t) => onApplyTemplate(t.name)} />
-            </DropdownMenuContent>
-          </DropdownMenu>
+        {/* 4. Query Results */}
+        <section>
+          {hasRun ? <QueryResults /> : <NoResultsCard />}
         </section>
 
         <section>
@@ -218,8 +308,50 @@ export function LeftPanel({ onApplyTemplate }: { onApplyTemplate: (name: string)
               <AddDestination onAdd={addDestination} options={SEARCH_OPTIONS} />
             </TokenRow>
             <TokenRow label="" ariaLabel="Add users or destinations">
-              <SearchDestination options={SEARCH_OPTIONS} selected={destinations} onAdd={addDestination} />
+              <SearchDestination options={USER_OPTIONS} selected={selectedUsers} onAdd={addUser} />
             </TokenRow>
+            <UserTiles users={selectedUsers} onRemove={removeUser} />
+
+            {/* Load Notification Template */}
+            <div className="grid gap-2">
+              <SectionHeader title="Load Notification Template" />
+              <div className="flex items-center gap-2">
+                <Select onValueChange={(val) => {
+                  const t = notificationTemplates.find(nt => nt.label === val)
+                  if (t) setNotificationBody(t.body)
+                }}>
+                  <SelectTrigger
+                    className="h-9 w-72 border-[var(--border)] bg-[var(--panel-2)] text-[var(--text)]"
+                    onClick={() => {
+                      if (!notificationBody) setNotificationBody(PLACEHOLDER_NOTIFICATION)
+                    }}
+                  >
+                    <SelectValue placeholder="Choose a notification template" />
+                  </SelectTrigger>
+                  <SelectContent className="z-50 bg-white text-[var(--text)] border-[var(--border)] shadow-md">
+                    {notificationTemplates.map((t) => (
+                      <SelectItem key={t.label} value={t.label}>{t.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button variant={showPreview ? "default" : "outline"} className="h-9" onClick={() => setShowPreview((s) => !s)}>
+                  {showPreview ? "Preview On" : "Preview"}
+                </Button>
+              </div>
+              {showPreview ? (
+                <div
+                  className="rounded-md border border-[var(--border)] bg-[var(--panel-2)] p-3 text-sm text-[var(--text)]"
+                  dangerouslySetInnerHTML={{ __html: notificationBody || PLACEHOLDER_NOTIFICATION }}
+                />
+              ) : (
+                <RichTextEditor placeholder="type notification here" value={notificationBody} onChange={setNotificationBody} />
+              )}
+              <div className="flex justify-end">
+                <Button variant="outline" className="h-9" onClick={() => console.log("Saved notification template:", notificationBody)}>
+                  Save notification template
+                </Button>
+              </div>
+            </div>
           </div>
         </section>
 

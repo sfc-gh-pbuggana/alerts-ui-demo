@@ -19,7 +19,7 @@ export function ConditionBuilder() {
         </SelectContent>
       </Select>
 
-      <Input defaultValue="amount" className="h-9 w-40 border-[var(--border)] bg-[var(--panel-2)] text-[var(--text)]" />
+      <Input defaultValue="number_of_failures" className="h-9 w-40 border-[var(--border)] bg-[var(--panel-2)] text-[var(--text)]" />
 
       <Select defaultValue="gt">
         <SelectTrigger className="h-9 w-20 border-[var(--border)] bg-[var(--panel-2)] text-[var(--text)]">

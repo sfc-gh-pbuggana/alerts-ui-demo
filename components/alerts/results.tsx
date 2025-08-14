@@ -11,7 +11,7 @@ export function NoResultsCard() {
           <CardTitle className="text-base">Query Results</CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-[var(--subtle-text)]">
-          No query has been run yet
+          Alert query has not been run yet. Build and run the alert query in the editor on the right.
         </CardContent>
       </Card>
     </div>

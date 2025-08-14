@@ -6,13 +6,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/compon
 import { ChevronDown, LoaderCircle, Play, Sparkles } from 'lucide-react'
 import { DatabaseSchemaMenu, RoleWarehouseMenu } from "./menus"
 import { DATABASES, ROLES, WAREHOUSES } from "./constants"
-import { NoResultsCard, QueryResults } from "./results"
+// Results UI moved to left panel
 import { SaveTemplateModal } from "./save-template-modal"
 import { SQLEditor, type SQLEditorHandle } from "./sql-editor"
 
-export function RightPanel({ sql, setSql }: { sql: string; setSql: (v: string) => void }) {
+export function RightPanel({ sql, setSql, onRun }: { sql: string; setSql: (v: string) => void; onRun: () => void }) {
   const [isRunning, setIsRunning] = useState(false)
-  const [hasRun, setHasRun] = useState(false)
   const [showSaveModal, setShowSaveModal] = useState(false)
   const editorApiRef = useRef<SQLEditorHandle | null>(null)
 
@@ -37,7 +36,7 @@ export function RightPanel({ sql, setSql }: { sql: string; setSql: (v: string) =
               onClick={() => {
                 if (isRunning) return
                 setIsRunning(true)
-                setHasRun(true)
+                onRun()
                 setTimeout(() => setIsRunning(false), 1000)
               }}
               aria-label="Run"
@@ -114,9 +113,7 @@ export function RightPanel({ sql, setSql }: { sql: string; setSql: (v: string) =
         </Button>
       </div>
 
-      <div className="border-t border-[var(--border)] bg-[var(--panel)]">
-        {hasRun ? <QueryResults /> : <NoResultsCard />}
-      </div>
+      {/* Results moved to left panel per design request */}
 
       <SaveTemplateModal
         open={showSaveModal}
