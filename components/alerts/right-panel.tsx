@@ -10,7 +10,7 @@ import { DATABASES, ROLES, WAREHOUSES } from "./constants"
 import { SaveTemplateModal } from "./save-template-modal"
 import { SQLEditor, type SQLEditorHandle } from "./sql-editor"
 
-export function RightPanel({ sql, setSql, onRun }: { sql: string; setSql: (v: string) => void; onRun: () => void }) {
+export function RightPanel({ sql, setSql, onRunStart, onRun }: { sql: string; setSql: (v: string) => void; onRunStart?: () => void; onRun: () => void }) {
   const [isRunning, setIsRunning] = useState(false)
   const [showSaveModal, setShowSaveModal] = useState(false)
   const editorApiRef = useRef<SQLEditorHandle | null>(null)
@@ -36,8 +36,11 @@ export function RightPanel({ sql, setSql, onRun }: { sql: string; setSql: (v: st
               onClick={() => {
                 if (isRunning) return
                 setIsRunning(true)
-                onRun()
-                setTimeout(() => setIsRunning(false), 1000)
+                onRunStart?.()
+                setTimeout(() => {
+                  setIsRunning(false)
+                  onRun()
+                }, 3500)
               }}
               aria-label="Run"
             >

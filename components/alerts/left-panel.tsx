@@ -1,8 +1,9 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { Bell, CheckCircle2, ChevronDown, LoaderCircle } from 'lucide-react'
+import { Bell, CheckCircle2, ChevronDown, LoaderCircle, Settings } from 'lucide-react'
 import { Button } from "@/components/ui/button"
+import Link from "next/link"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { SEARCH_OPTIONS } from "./constants"
@@ -127,7 +128,7 @@ export function LeftPanel({ onApplyTemplate, hasRun }: { onApplyTemplate: (name:
   const [showCron, setShowCron] = useState(false)
   const [testing, setTesting] = useState(false)
   const [testResult, setTestResult] = useState<"idle" | "true">("idle")
-  const [destinations, setDestinations] = useState<string[]>(["Email", "Webhook Destination 2"])
+  const [destinations, setDestinations] = useState<string[]>(["Email"])
   const [selectedUsers, setSelectedUsers] = useState<string[]>([])
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
@@ -186,7 +187,12 @@ export function LeftPanel({ onApplyTemplate, hasRun }: { onApplyTemplate: (name:
           </DropdownMenu>
         </section>
 
-        {/* 3. Condition */}
+        {/* 3. Query Results */}
+        <section>
+          {hasRun ? <QueryResults /> : <NoResultsCard />}
+        </section>
+
+        {/* 4. Condition */}
         <section>
           <SectionHeader title="Condition" />
           <ConditionBuilder />
@@ -220,11 +226,6 @@ export function LeftPanel({ onApplyTemplate, hasRun }: { onApplyTemplate: (name:
           </div>
         </section>
 
-        {/* 4. Query Results */}
-        <section>
-          {hasRun ? <QueryResults /> : <NoResultsCard />}
-        </section>
-
         <section>
           <SectionHeader title="Schedule" />
           <div className="grid gap-3">
@@ -241,7 +242,7 @@ export function LeftPanel({ onApplyTemplate, hasRun }: { onApplyTemplate: (name:
                     ))}
                   </SelectContent>
                 </Select>
-                <Select defaultValue="hour">
+                <Select defaultValue="minute">
                   <SelectTrigger className="w-36 h-9 border-[var(--border)] bg-[var(--panel-2)] text-[var(--text)]">
                     <SelectValue placeholder="Hour" />
                   </SelectTrigger>
@@ -255,7 +256,7 @@ export function LeftPanel({ onApplyTemplate, hasRun }: { onApplyTemplate: (name:
 
               <span className="text-sm text-[var(--subtle-text)]">at</span>
 
-              <Select defaultValue="24">
+              <Select defaultValue="0">
                 <SelectTrigger className="w-64 h-9 border-[var(--border)] bg-[var(--panel-2)] text-[var(--text)]">
                   <SelectValue placeholder="24 minutes past the hour" />
                 </SelectTrigger>
@@ -299,7 +300,12 @@ export function LeftPanel({ onApplyTemplate, hasRun }: { onApplyTemplate: (name:
         </section>
 
         <section>
-          <SectionHeader title="Notifications" />
+          <div className="flex items-center justify-between">
+            <SectionHeader title="Notifications" />
+            <Link href="/notification-settings" className="inline-flex items-center gap-1 text-[var(--subtle-text)] hover:text-[var(--text)]">
+              <Settings className="h-4 w-4" />
+            </Link>
+          </div>
           <div className="space-y-3">
             <TokenRow label="Send a notification on firing">
               {destinations.map((d) => (
@@ -356,9 +362,14 @@ export function LeftPanel({ onApplyTemplate, hasRun }: { onApplyTemplate: (name:
         </section>
 
         <section>
-          <Button className="h-9 bg-[var(--color-primary)] text-white hover:brightness-110">
-            Finalize alert
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" className="h-9 bg-white text-[var(--text)]" onClick={() => console.log("Test Alert clicked")}> 
+              Test Alert
+            </Button>
+            <Button className="h-9 bg-[var(--color-primary)] text-white hover:brightness-110">
+              Finalize alert
+            </Button>
+          </div>
         </section>
 
         <section>

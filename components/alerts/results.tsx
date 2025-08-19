@@ -29,14 +29,14 @@ export function QueryResults() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[240px]">date</TableHead>
-                <TableHead>amount</TableHead>
+                <TableHead className="w-[240px]">observed_date</TableHead>
+                <TableHead>number_of_failures</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               <TableRow>
                 <TableCell>2025-07-17</TableCell>
-                <TableCell>4000</TableCell>
+                <TableCell>3</TableCell>
               </TableRow>
             </TableBody>
           </Table>
