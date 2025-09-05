@@ -1,7 +1,6 @@
 "use client"
 
 import { Component, ErrorInfo, ReactNode } from 'react'
-import { logger } from '@/lib/logger'
 
 interface Props {
   children: ReactNode
@@ -27,11 +26,16 @@ export class ErrorBoundary extends Component<Props, State> {
     console.error('ErrorBoundary caught an error:', error, errorInfo)
     
     // Enhanced logging with context
-    logger.error('React Error Boundary triggered', {
-      error,
-      componentStack: errorInfo.componentStack,
-      url: typeof window !== 'undefined' ? window.location.href : 'unknown',
-    })
+    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
+      console.error('Production error details:', {
+        error: error.toString(),
+        stack: error.stack,
+        componentStack: errorInfo.componentStack,
+        url: window.location.href,
+        userAgent: navigator.userAgent,
+        timestamp: new Date().toISOString(),
+      })
+    }
   }
 
   public render() {
