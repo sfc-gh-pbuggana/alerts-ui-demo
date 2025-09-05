@@ -1,9 +1,15 @@
 "use client"
 
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react"
-import MonacoEditor from "@monaco-editor/react"
+import dynamic from 'next/dynamic'
 import { createPortal } from "react-dom"
 import { Send, Sparkles, X } from 'lucide-react'
+
+// Load Monaco Editor only on client side
+const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
+  ssr: false,
+  loading: () => <div className="h-full w-full flex items-center justify-center bg-[var(--panel-2)] text-[var(--subtle-text)]">Loading editor...</div>
+})
 
 export type SQLEditorHandle = {
   showAiRow: () => void
@@ -27,7 +33,7 @@ export const SQLEditor = forwardRef<SQLEditorHandle, SQLEditorProps>(function SQ
   }, [aiZone])
 
   const showAiRow = () => {
-    if (!editorRef.current) return
+    if (!editorRef.current || typeof document === 'undefined') return
     const editor = editorRef.current as any
     const afterLineNumber = editor.getPosition()?.lineNumber ?? 1
     const container = document.createElement("div")
