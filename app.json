@@ -1,0 +1,29 @@
+{
+  "name": "alerts-ui-demo",
+  "description": "Snowflake Alert Center Demo - Next.js Application",
+  "repository": "https://github.com/your-username/alerts-ui-demo",
+  "logo": "https://cdn.jsdelivr.net/npm/simple-icons@v3/icons/nextdotjs.svg",
+  "keywords": ["nextjs", "react", "typescript", "tailwindcss"],
+  "image": "heroku/nodejs",
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "formation": {
+    "web": {
+      "quantity": 1
+    }
+  },
+  "addons": [],
+  "env": {
+    "NODE_ENV": {
+      "description": "Environment (production for Heroku)",
+      "value": "production"
+    },
+    "NPM_CONFIG_PRODUCTION": {
+      "description": "Install only production dependencies",
+      "value": "false"
+    }
+  }
+}

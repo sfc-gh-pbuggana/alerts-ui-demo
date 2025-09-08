@@ -481,4 +481,6 @@ jspm_packages/
 tmp/
 temp/
 
-.vercel
+# Heroku
+.heroku/
+

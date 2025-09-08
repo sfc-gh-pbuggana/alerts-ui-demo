@@ -8,7 +8,7 @@ export function Header() {
     <header className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-[var(--border)] bg-[var(--panel)]">
       <div className="flex items-center gap-3 min-w-0">
         <img
-          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/snowflake-logo-blue-15BLebGxXDCeYJmPEhyAVug8UnBpbc.webp"
+          src="/placeholder-logo.svg"
           alt="Snowflake"
           className="h-7 w-auto"
         />

@@ -7,7 +7,6 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'Snowflake Alert Center Demo',
   description: 'Snowflake Alert Center Demo',
-  generator: 'v0.dev',
 }
 
 export default function RootLayout({
