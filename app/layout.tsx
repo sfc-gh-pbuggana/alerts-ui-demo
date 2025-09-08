@@ -5,8 +5,8 @@ import { ErrorBoundary } from '@/components/error-boundary'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Snowflake Alert Center Demo',
-  description: 'Snowflake Alert Center Demo',
+  title: 'Alert Center Demo',
+  description: 'Alert Center Demo',
 }
 
 export default function RootLayout({

@@ -1,24 +1,76 @@
-## Stub readme file
+# Alert Center Demo
 
-This is a *stub* readme file to descibe your project
+This is a demo application showcasing an alert center interface built with Next.js, TypeScript, and Tailwind CSS.
 
-Please update it with contact information for your repository and team.
+## Features
 
-Formatting help can be found at [github](https://help.github.com/en/github/writing-on-github/basic-writing-and-formatting-syntax)
+- Modern alert management interface
+- Cloud integration notifications (AWS SNS, Azure Event Grid, Google Pub/Sub)
+- Notification settings and preferences
+- Responsive design with dark/light theme support
+- Built with Next.js 15 and modern React patterns
 
-## Requirements for private repositories
+## Getting Started
 
-If this repository is intended to be private, please see the [CM requirements](https://snowflakecomputing.atlassian.net/wiki/spaces/~367958958/pages/671909031/Creating+a+new+repository)
+### Prerequisites
 
-## Metadata Requirements
+- Node.js 18+ 
+- npm 8+
 
-This repository must have a metadata file located at `/.github/repo_meta.yaml`. This template repository already includes [that file](./.github/repo_meta.yaml).
+### Installation
 
-In addition to having a metadata file, this repository must define the following metadata in the metadata file:
-* `production` - set this field to `true` if this repository is used to develop, build, or deploy production services. Set this field to `false` otherwise. `true` is the default setting.
-* `point_of_contact` - set this field to the GitHub user or team that should be the point of contact for this repository.
-* `distributed` - set this field to true if code from this repository (including binaries created from this repository) is downloaded by or onto non-Snowflake computers”. Set this field to `false` otherwise. `false` is the default setting. For more information, please check [Snowflake Open Source Policy](https://docs.google.com/document/d/1lsyiafPrn_j5X10hMl62S6cVn26ru_Oxbnh9L6tgav4)
-* `modified` - set this filed to `true` if the open source code in the repository is modified in anyway. Set this field to `false` otherwise. `false` is the default setting. 
-* `code_owners_file_present` - set this field to `true` if this repository includes a code owners file. Set this field to `false` otherwise. `true` is the default setting.
-* `jira_project_issue_type` - set this field with jira project and related issue type (e.g., `SNOW/BUG`). 
-* `jira_area` - set this field with jira project area (e.g., `Data Platform: Ecosystem`). 
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd alerts-ui-demo
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Run the development server:
+```bash
+npm run dev
+```
+
+4. Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
+
+## Deployment
+
+This application is configured for deployment on Heroku. See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
+
+## Technology Stack
+
+- **Framework**: Next.js 15
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **UI Components**: Radix UI
+- **Icons**: Lucide React
+- **Package Manager**: npm
+
+## Project Structure
+
+```
+alerts-ui-demo/
+├── app/                    # Next.js app router pages
+├── components/             # Reusable React components
+├── hooks/                  # Custom React hooks
+├── lib/                    # Utility functions
+├── public/                 # Static assets
+├── styles/                 # Global styles
+└── ...config files
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License.

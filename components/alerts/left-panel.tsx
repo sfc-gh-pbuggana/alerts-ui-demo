@@ -163,7 +163,7 @@ export function LeftPanel({ onApplyTemplate, hasRun }: { onApplyTemplate: (name:
         <section>
           <div className="flex items-center gap-2 mb-2">
             <Bell className="h-4 w-4 text-[var(--color-mid-blue)]" />
-            <h3 className="text-base font-semibold">Snowflake Alert Center</h3>
+            <h3 className="text-base font-semibold">Alert Center</h3>
           </div>
           <p className="text-sm text-[var(--subtle-text)]">
             Write and run a query using the editor on the right. Once there is a valid query,

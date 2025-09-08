@@ -115,7 +115,7 @@ export function AddDestination({ onAdd, options }: { onAdd: (name: string) => vo
         return (
           <div className="grid gap-3">
             <div className="text-xs text-[var(--subtle-text)] bg-[var(--panel-3)] p-3 rounded-md">
-              Note: SNS inbound integrations are used for receiving events from AWS into Snowflake, typically for auto-ingest scenarios.
+              Note: SNS inbound integrations are used for receiving events from AWS into the platform, typically for auto-ingest scenarios.
             </div>
             <div className="grid gap-1">
               <Label htmlFor="sns-topic-arn">SNS Topic ARN</Label>
@@ -123,8 +123,8 @@ export function AddDestination({ onAdd, options }: { onAdd: (name: string) => vo
             </div>
             <div className="grid gap-1">
               <Label htmlFor="sns-role-arn">IAM Role ARN</Label>
-              <Input id="sns-role-arn" placeholder="arn:aws:iam::123456789012:role/snowflake-sns-role" value={form.snsRoleArn || ""} onChange={(e) => updateField("snsRoleArn", e.target.value)} />
-              <div className="text-xs text-[var(--subtle-text)]">IAM role that Snowflake will assume to access SNS.</div>
+              <Input id="sns-role-arn" placeholder="arn:aws:iam::123456789012:role/platform-sns-role" value={form.snsRoleArn || ""} onChange={(e) => updateField("snsRoleArn", e.target.value)} />
+              <div className="text-xs text-[var(--subtle-text)]">IAM role that the platform will assume to access SNS.</div>
             </div>
           </div>
         )
@@ -134,7 +134,7 @@ export function AddDestination({ onAdd, options }: { onAdd: (name: string) => vo
             <div className="grid gap-1">
               <Label htmlFor="sns-arn">Topic ARN</Label>
               <Input id="sns-arn" placeholder="arn:aws:sns:us-east-1:123456789012:my-topic" value={form.arn || ""} onChange={(e) => updateField("arn", e.target.value)} />
-              <div className="text-xs text-[var(--subtle-text)]">Provide the Amazon SNS topic ARN Snowflake will publish to.</div>
+              <div className="text-xs text-[var(--subtle-text)]">Provide the Amazon SNS topic ARN the platform will publish to.</div>
             </div>
             <div className="grid gap-1">
               <Label htmlFor="aws-region">AWS Region</Label>
@@ -160,12 +160,12 @@ export function AddDestination({ onAdd, options }: { onAdd: (name: string) => vo
         return (
           <div className="grid gap-3">
             <div className="text-xs text-[var(--subtle-text)] bg-[var(--panel-3)] p-3 rounded-md">
-              Note: Azure Event Grid inbound integrations receive events from Azure services into Snowflake.
+              Note: Azure Event Grid inbound integrations receive events from Azure services into the platform.
             </div>
             <div className="grid gap-1">
               <Label htmlFor="eg-in-resource">Event Grid Topic Resource ID</Label>
               <Input id="eg-in-resource" placeholder="/subscriptions/sub/resourceGroups/rg/providers/Microsoft.EventGrid/topics/topic" value={form.resourceId || ""} onChange={(e) => updateField("resourceId", e.target.value)} />
-              <div className="text-xs text-[var(--subtle-text)]">Used for inbound events to Snowflake.</div>
+              <div className="text-xs text-[var(--subtle-text)]">Used for inbound events to the platform.</div>
             </div>
             <div className="grid gap-1">
               <Label htmlFor="eg-in-key">Access key</Label>
@@ -195,7 +195,7 @@ export function AddDestination({ onAdd, options }: { onAdd: (name: string) => vo
         return (
           <div className="grid gap-3">
             <div className="text-xs text-[var(--subtle-text)] bg-[var(--panel-3)] p-3 rounded-md">
-              Note: Google Pub/Sub inbound integrations allow Snowflake to receive messages from GCP services.
+              Note: Google Pub/Sub inbound integrations allow the platform to receive messages from GCP services.
             </div>
             <div className="grid gap-1">
               <Label htmlFor="ps-in-topic">Topic name</Label>
@@ -204,7 +204,7 @@ export function AddDestination({ onAdd, options }: { onAdd: (name: string) => vo
             <div className="grid gap-1">
               <Label htmlFor="ps-in-sa">Service account JSON</Label>
               <Textarea id="ps-in-sa" placeholder='{ "type": "service_account", ... }' value={form.inServiceAccount || ""} onChange={(e) => updateField("inServiceAccount", e.target.value)} />
-              <div className="text-xs text-[var(--subtle-text)]">Credentials used by Snowflake to pull from Pub/Sub.</div>
+              <div className="text-xs text-[var(--subtle-text)]">Credentials used by the platform to pull from Pub/Sub.</div>
             </div>
           </div>
         )
@@ -293,7 +293,7 @@ export function AddDestination({ onAdd, options }: { onAdd: (name: string) => vo
                     <span className="text-sm">{isInbound ? "Inbound" : "Outbound"}</span>
                   </div>
                   <div className="text-xs text-[var(--subtle-text)]">
-                    {isInbound ? "Receive events from cloud services into Snowflake" : "Send notifications from Snowflake to cloud services"}
+                    {isInbound ? "Receive events from cloud services into the platform" : "Send notifications from the platform to cloud services"}
                   </div>
                 </div>
               </div>
@@ -301,7 +301,7 @@ export function AddDestination({ onAdd, options }: { onAdd: (name: string) => vo
 
             <div className="flex items-center gap-2 mt-2">
               <h4 className="text-sm font-medium">Enter notification configuration</h4>
-              <a href="https://docs.snowflake.com/en/sql-reference/sql/create-notification-integration" target="_blank" rel="noreferrer" aria-label="Open documentation">
+              <a href="#" target="_blank" rel="noreferrer" aria-label="Open documentation">
                 <HelpCircle className="h-4 w-4 text-[var(--color-mid-blue)]" />
               </a>
             </div>

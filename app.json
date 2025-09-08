@@ -1,6 +1,6 @@
 {
   "name": "alerts-ui-demo",
-  "description": "Snowflake Alert Center Demo - Next.js Application",
+  "description": "Alert Center Demo - Next.js Application",
   "repository": "https://github.com/your-username/alerts-ui-demo",
   "logo": "https://cdn.jsdelivr.net/npm/simple-icons@v3/icons/nextdotjs.svg",
   "keywords": ["nextjs", "react", "typescript", "tailwindcss"],

@@ -54,7 +54,7 @@ export default function NotificationSettingsPage() {
         { id: "evaluations", name: "Evaluations", enabled: false },
         { id: "document-ai", name: "Document AI", enabled: true },
         { id: "agents", name: "Agents", enabled: true },
-        { id: "snowflake-intelligence", name: "Snowflake Intelligence", enabled: true },
+        { id: "platform-intelligence", name: "Platform Intelligence", enabled: true },
       ]
     },
     {
@@ -161,7 +161,7 @@ export default function NotificationSettingsPage() {
         <div className="space-y-4">
           <h1 className="text-2xl font-semibold">Notification Subscriptions</h1>
           <p className="text-[var(--subtle-text)]">
-            Enable or disable the reports, digests and notifications you receive from Snowflake
+            Enable or disable the reports, digests and notifications you receive from the platform
           </p>
           <button 
             className="border border-gray-400 text-gray-800 hover:bg-gray-100 px-4 py-2 rounded-md"

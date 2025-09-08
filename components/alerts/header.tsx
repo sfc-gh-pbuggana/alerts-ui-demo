@@ -9,7 +9,7 @@ export function Header() {
       <div className="flex items-center gap-3 min-w-0">
         <img
           src="/placeholder-logo.svg"
-          alt="Snowflake"
+          alt="Company Logo"
           className="h-7 w-auto"
         />
         <Separator orientation="vertical" className="h-6 bg-[var(--border)]" />
