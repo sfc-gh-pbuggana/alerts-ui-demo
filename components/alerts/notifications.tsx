@@ -311,7 +311,7 @@ export function AddDestination({ onAdd, options }: { onAdd: (name: string) => vo
 
           <div className="flex items-center justify-end gap-2 mt-4">
             <Button variant="outline" onClick={onTest}>Send me a Test Notification</Button>
-            <Button className="h-9 bg-[var(--color-primary)] text-white hover:brightness-110" onClick={onSave}>Save Notification Channel</Button>
+            <Button className="h-9 bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] active:bg-[var(--color-primary-pressed)]" onClick={onSave}>Save Notification Channel</Button>
           </div>
         </DialogContent>
       </Dialog>

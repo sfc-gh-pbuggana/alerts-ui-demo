@@ -199,7 +199,7 @@ export function LeftPanel({ onApplyTemplate, hasRun }: { onApplyTemplate: (name:
           <div className="mt-3 flex items-center gap-3">
             <Button
               size="sm"
-              className="bg-[var(--color-primary)] text-white hover:brightness-110"
+              className="bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] active:bg-[var(--color-primary-pressed)]"
               onClick={() => {
                 setTesting(true)
                 setTestResult("idle")
@@ -366,7 +366,7 @@ export function LeftPanel({ onApplyTemplate, hasRun }: { onApplyTemplate: (name:
             <Button variant="outline" className="h-9 bg-white text-[var(--text)]" onClick={() => console.log("Test Alert clicked")}> 
               Test Alert
             </Button>
-            <Button className="h-9 bg-[var(--color-primary)] text-white hover:brightness-110">
+            <Button className="h-9 bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] active:bg-[var(--color-primary-pressed)]">
               Finalize alert
             </Button>
           </div>

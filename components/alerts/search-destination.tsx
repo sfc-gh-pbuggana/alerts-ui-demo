@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -9,20 +9,41 @@ export function SearchDestination({
   options,
   selected,
   onAdd,
+  placeholder = "Search to add users",
 }: {
   options: string[]
   selected: string[]
   onAdd: (name: string) => void
+  placeholder?: string
 }) {
   const [query, setQuery] = useState("")
   const [open, setOpen] = useState(false)
   const [tempSelection, setTempSelection] = useState<string[]>(selected)
   const results = options.filter((o) => o.toLowerCase().includes(query.toLowerCase()))
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setOpen(false)
+        setTempSelection(selected) // Reset temp selection on outside click
+      }
+    }
+
+    if (open) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [open, selected])
 
   return (
-    <div className="relative flex items-center gap-2 w-full">
+    <div ref={containerRef} className="relative flex items-center gap-2 w-full">
       <Input
-        placeholder="Search to add users"
+        placeholder={placeholder}
         value={query}
         onChange={(e) => {
           setQuery(e.target.value)
@@ -35,7 +56,7 @@ export function SearchDestination({
         className="h-9 border-[var(--border)] bg-[var(--panel-3)] text-[var(--text)] placeholder:text-[var(--subtle-text)]"
       />
       <Button
-        className="h-9 bg-[var(--color-primary)] text-white hover:brightness-110"
+        className="h-9 bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] active:bg-[var(--color-primary-pressed)]"
         onClick={() => {
           tempSelection
             .filter((u) => !selected.includes(u))
@@ -93,7 +114,7 @@ export function SearchDestination({
               Cancel
             </Button>
             <Button
-              className="h-8 bg-[var(--color-primary)] text-white hover:brightness-110"
+              className="h-8 bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] active:bg-[var(--color-primary-pressed)]"
               onClick={() => {
                 tempSelection
                   .filter((u) => !selected.includes(u))
