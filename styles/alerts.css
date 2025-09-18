@@ -1,21 +1,120 @@
-/* Theme variables and a couple of utility styles scoped to this app */
+/* Theme variables matching design system primitives */
 .sf-theme {
-  --color-primary: #29B5E8;
-  --color-midnight: #000000;
+  /* Typography - Inter font family */
+  font-family: var(--font-inter), 'Inter', system-ui, -apple-system, sans-serif;
+  
+  /* Primary blues from design system */
+  --color-primary: #1A6CE7; /* Base Colors/Blue/Blue 50 */
+  --color-primary-hover: #0858D0; /* Base Colors/Blue/Blue 60 */
+  --color-primary-pressed: #003E9A; /* Base Colors/Blue/Blue 80 */
+  
+  /* Background levels from design system */
+  --panel: #FFFFFF; /* Level 1 background - page canvas */
+  --panel-2: #FBFBFB; /* Level 2 background - form controls, cards */
+  --panel-3: #F7FAFD; /* Level 3 background - dialogs, popovers */
+  
+  /* Border colors from design system */
+  --border: #D5DAE4; /* Level 1 border */
+  --border-2: #E5E2F; /* Level 2 border */
+  --border-bright: #BDC4D5; /* Level 3 border bright */
+  
+  /* Text colors */
+  --text: #293246; /* Primary text */
+  --subtle-text: #5D6A83; /* Secondary text */
+  --muted: #93A6C0; /* Muted text */
+  
+  /* Grays from design system */
+  --gray-00: #FBFBFB;
+  --gray-85: #1E252F;
+  --gray-90: #191E24;
+  
+  /* Legacy colors for compatibility */
+  --color-midnight: #191E24;
   --color-mid-blue: #11567F;
-  --color-medium-gray: #5B5B5B;
+  --color-medium-gray: #5D6A83;
   --color-star-blue: #75CDD7;
   --color-valencia-orange: #FF9F36;
   --color-first-light: #D45B90;
   --color-purple-moon: #7254A3;
-  --panel: #ffffff;
-  --panel-2: #ffffff;
-  --panel-3: #F7FAFD;
-  --border: #E5E7EB;
-  --muted: #5B5B5B;
-  --text: #0F172A;
-  --subtle-text: #334155;
-  --white: #ffffff;
+  --white: #FFFFFF;
+}
+
+/* Typography scales according to style guide */
+.sf-theme h1, .sf-theme .text-3xl {
+  font-family: var(--font-inter), 'Inter', system-ui, sans-serif;
+  font-weight: 700; /* Inter Bold 700 */
+  font-size: 1.875rem; /* 30px */
+  line-height: 2.25rem; /* 36px */
+}
+
+.sf-theme h2, .sf-theme .text-2xl {
+  font-family: var(--font-inter), 'Inter', system-ui, sans-serif;
+  font-weight: 600; /* Inter Semi Bold 600 */
+  font-size: 1.5rem; /* 24px */
+  line-height: 2rem; /* 32px */
+}
+
+.sf-theme h3, .sf-theme .text-xl {
+  font-family: var(--font-inter), 'Inter', system-ui, sans-serif;
+  font-weight: 600; /* Inter Semi Bold 600 */
+  font-size: 1.25rem; /* 20px */
+  line-height: 1.75rem; /* 28px */
+}
+
+.sf-theme .text-base, .sf-theme p {
+  font-family: var(--font-inter), 'Inter', system-ui, sans-serif;
+  font-weight: 400; /* Inter Regular 400 */
+  font-size: 1rem; /* 16px */
+  line-height: 1.5rem; /* 24px */
+}
+
+.sf-theme .text-sm {
+  font-family: var(--font-inter), 'Inter', system-ui, sans-serif;
+  font-weight: 400; /* Inter Regular 400 */
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.25rem; /* 20px */
+}
+
+.sf-theme .text-xs {
+  font-family: var(--font-inter), 'Inter', system-ui, sans-serif;
+  font-weight: 400; /* Inter Regular 400 */
+  font-size: 0.75rem; /* 12px */
+  line-height: 1rem; /* 16px */
+}
+
+/* Font weight utilities */
+.sf-theme .font-medium {
+  font-weight: 500; /* Inter Medium 500 */
+}
+
+.sf-theme .font-semibold {
+  font-weight: 600; /* Inter Semi Bold 600 */
+}
+
+.sf-theme .font-bold {
+  font-weight: 700; /* Inter Bold 700 */
+}
+
+/* Button styling overrides for proper Snowflake blue */
+.sf-theme button[class*="bg-[var(--color-primary)]"] {
+  background-color: var(--color-primary) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.sf-theme button[class*="bg-[var(--color-primary)]:hover"] {
+  background-color: var(--color-primary-hover) !important;
+}
+
+.sf-theme button[class*="bg-[var(--color-primary)]:active"] {
+  background-color: var(--color-primary-pressed) !important;
+}
+
+/* Ensure dialog buttons have proper styling */
+.sf-theme [data-slot="dialog-content"] button[class*="bg-[var(--color-primary)]"] {
+  background-color: var(--color-primary) !important;
+  color: white !important;
+  border: none !important;
 }
 
 /* Optional: small shadow for inline AI row focus ring parity */
