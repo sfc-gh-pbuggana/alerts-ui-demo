@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { TokenRow, TagToken, AddDestination } from "@/components/alerts/notifications"
 import { SearchDestination } from "@/components/alerts/search-destination"
@@ -278,7 +278,7 @@ export default function OpenFlowAlertsPage() {
                     }`}
                   >
                     <div className="flex items-start space-x-3 flex-1">
-                      <Checkbox 
+                      <Switch 
                         id={template.id}
                         checked={isEnabled}
                         onCheckedChange={(checked) => handleTemplateToggle(template.id, !!checked)}
@@ -353,7 +353,7 @@ export default function OpenFlowAlertsPage() {
                             onClick={() => toggleRole(role)}
                           >
                             <div className="flex items-center space-x-2">
-                              <Checkbox 
+                              <Switch 
                                 checked={selectedRoles.includes(role)}
                                 onCheckedChange={() => toggleRole(role)}
                               />

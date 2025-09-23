@@ -3,14 +3,14 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { TokenRow, TagToken, AddDestination } from "@/components/alerts/notifications"
 import { SearchDestination } from "@/components/alerts/search-destination"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { ArrowLeft, LoaderCircle, CheckCircle2, ChevronDown, ChevronRight } from "lucide-react"
+import { ArrowLeft, LoaderCircle, CheckCircle2, ChevronDown, ChevronRight, Plus, X } from "lucide-react"
 import Link from "next/link"
 import { getSQLTemplate } from "@/lib/sql-templates"
 import "@/styles/alerts.css"
@@ -243,7 +243,7 @@ export default function SecurityIAMAlertsPage() {
                     }`}
                   >
                     <div className="flex items-start space-x-3 flex-1">
-                      <Checkbox 
+                      <Switch 
                         id={template.id}
                         checked={isEnabled}
                         onCheckedChange={(checked) => handleTemplateToggle(template.id, !!checked)}

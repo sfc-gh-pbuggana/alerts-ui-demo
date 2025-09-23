@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { Header } from "@/components/alerts/header"
 import { LeftPanel } from "@/components/alerts/left-panel"
@@ -8,7 +8,7 @@ import { RightPanel } from "@/components/alerts/right-panel"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import "@/styles/alerts.css"
 
-export default function AlertsPage() {
+function AlertsPageContent() {
   const [sql, setSql] = useState("")
   const searchParams = useSearchParams()
 
@@ -54,5 +54,13 @@ export default function AlertsPage() {
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>
+  )
+}
+
+export default function AlertsPage() {
+  return (
+    <Suspense fallback={<div className="sf-theme min-h-screen bg-[var(--panel)] flex items-center justify-center">Loading...</div>}>
+      <AlertsPageContent />
+    </Suspense>
   )
 }

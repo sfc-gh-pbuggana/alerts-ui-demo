@@ -3,14 +3,16 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { TokenRow, TagToken, AddDestination } from "@/components/alerts/notifications"
 import { SearchDestination } from "@/components/alerts/search-destination"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { ArrowLeft, LoaderCircle, CheckCircle2, ChevronDown, ChevronRight } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { ArrowLeft, LoaderCircle, CheckCircle2, ChevronDown, ChevronRight, Plus, X } from "lucide-react"
 import Link from "next/link"
 import { getSQLTemplate } from "@/lib/sql-templates"
 import "@/styles/alerts.css"
@@ -80,6 +82,20 @@ const dataQualityTemplates: AlertTemplate[] = [
     description: "Detect unexpected changes in data schema",
     sqlTemplate: "",
     enabled: false
+  },
+  {
+    id: "null-coverage-threshold",
+    name: "NULL Coverage Threshold",
+    description: "Monitor NULL coverage exceeding specified threshold",
+    sqlTemplate: "",
+    enabled: false
+  },
+  {
+    id: "data-anomaly-detection",
+    name: "Data Anomaly Detection",
+    description: "Detect data anomalies using statistical analysis",
+    sqlTemplate: "",
+    enabled: false
   }
 ]
 
@@ -92,14 +108,18 @@ export default function DataQualityAlertsPage() {
   const [externalDestinations, setExternalDestinations] = useState<string[]>([])
   const [isSaving, setIsSaving] = useState(false)
   const [showConfirmation, setShowConfirmation] = useState(false)
+  const [nullThreshold, setNullThreshold] = useState("5")
+  
+  // Channel visibility state
+  const [visibleChannels, setVisibleChannels] = useState<Set<string>>(new Set(['email']))
   
   // Expandable section states
   const [emailRolesExpanded, setEmailRolesExpanded] = useState(true)
   const [emailUsersExpanded, setEmailUsersExpanded] = useState(false)
-  const [inAppExpanded, setInAppExpanded] = useState(false)
+  const [inAppExpanded, setInAppExpanded] = useState(true)
   const [inAppRolesExpanded, setInAppRolesExpanded] = useState(true)
   const [inAppUsersExpanded, setInAppUsersExpanded] = useState(false)
-  const [externalExpanded, setExternalExpanded] = useState(false)
+  const [externalExpanded, setExternalExpanded] = useState(true)
 
   const handleTemplateToggle = (templateId: string, enabled: boolean) => {
     setTemplateStates(prev => ({
@@ -119,6 +139,26 @@ export default function DataQualityAlertsPage() {
   const removeEmailRole = (role: string) => setSelectedEmailRoles((prev) => prev.filter((r) => r !== role))
   const addInAppRole = (role: string) => setSelectedInAppRoles((prev) => (prev.includes(role) ? prev : [...prev, role]))
   const removeInAppRole = (role: string) => setSelectedInAppRoles((prev) => prev.filter((r) => r !== role))
+
+  // Channel management functions
+  const addChannel = (channelType: string) => {
+    setVisibleChannels(prev => new Set([...prev, channelType]))
+  }
+
+  const removeChannel = (channelType: string) => {
+    if (visibleChannels.size > 1) {
+      setVisibleChannels(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(channelType)
+        return newSet
+      })
+    }
+  }
+
+  const availableChannels = [
+    { id: 'inapp', label: 'In-App', disabled: visibleChannels.has('inapp') },
+    { id: 'external', label: 'External', disabled: visibleChannels.has('external') }
+  ].filter(channel => !channel.disabled)
 
   const EXTERNAL_DESTINATIONS = [
     "Webhook Destination 1", 
@@ -244,7 +284,7 @@ export default function DataQualityAlertsPage() {
                     }`}
                   >
                     <div className="flex items-start space-x-3 flex-1">
-                      <Checkbox 
+                      <Switch 
                         id={template.id}
                         checked={isEnabled}
                         onCheckedChange={(checked) => handleTemplateToggle(template.id, !!checked)}
@@ -261,6 +301,43 @@ export default function DataQualityAlertsPage() {
                         }`}>
                           {template.description}
                         </p>
+                        
+                        {/* Custom configuration for NULL Coverage Threshold - Expanded by default */}
+                        {template.id === "null-coverage-threshold" && (
+                          <div className={`mt-4 p-3 rounded-lg transition-all duration-200 ${
+                            isEnabled 
+                              ? 'bg-blue-50 border border-blue-200' 
+                              : 'bg-gray-50 border border-gray-200'
+                          }`}>
+                            <Label htmlFor="null-threshold" className={`text-sm font-medium mb-2 block ${
+                              isEnabled ? 'text-blue-800' : 'text-gray-600'
+                            }`}>
+                              NULL Coverage Threshold (%)
+                            </Label>
+                            <div className="flex items-center gap-2">
+                              <Input
+                                id="null-threshold"
+                                type="number"
+                                min="0"
+                                max="100"
+                                value={nullThreshold}
+                                onChange={(e) => setNullThreshold(e.target.value)}
+                                className={`w-24 h-8 text-sm bg-white ${
+                                  isEnabled ? 'border-blue-300' : 'border-gray-300'
+                                }`}
+                                placeholder="5"
+                              />
+                              <span className={`text-sm ${
+                                isEnabled ? 'text-blue-700' : 'text-gray-500'
+                              }`}>% NULL values</span>
+                            </div>
+                            <p className={`text-xs mt-1 ${
+                              isEnabled ? 'text-blue-600' : 'text-gray-500'
+                            }`}>
+                              Alert when NULL coverage exceeds this percentage (default: 5%)
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
                     
@@ -289,25 +366,36 @@ export default function DataQualityAlertsPage() {
             <h3 className="text-xl font-semibold text-gray-900 mb-6">Notification Channels</h3>
             <div className="space-y-6">
               
-              {/* Email Section - First and expanded */}
-              <div className="space-y-4 border border-[var(--border)] rounded-lg p-4 bg-[var(--panel-2)]">
-                <h4 className="text-lg font-semibold text-gray-800 flex items-center gap-3">
-                  <EmailIcon className="text-[var(--color-primary)]" />
-                  Email (Snowflake Users)
-                </h4>
-                
-                <div className="space-y-4 pl-3">
-                  {/* Roles Subsection - Expanded by default */}
-                  <div className="space-y-3">
+              {/* Email Section - Always visible */}
+              {visibleChannels.has('email') && (
+                <div className="space-y-4 border border-gray-300 rounded-lg p-4 bg-gray-50 relative">
+                  <div className="flex items-center justify-between">
                     <button
                       onClick={() => setEmailRolesExpanded(!emailRolesExpanded)}
-                      className="flex items-center gap-2 text-left hover:text-[var(--color-primary)] transition-colors"
+                      className="flex items-center gap-2 text-left hover:text-blue-600 transition-colors"
                     >
-                      <h5 className="text-md font-medium text-gray-700">Roles</h5>
+                      <h4 className="text-lg font-semibold text-gray-800 flex items-center gap-3">
+                        <EmailIcon className="text-blue-600" />
+                        Email (Snowflake Users)
+                      </h4>
                       {emailRolesExpanded ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
                     </button>
-                    {emailRolesExpanded && (
-                      <>
+                    {visibleChannels.size > 1 && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-gray-400 hover:text-red-600"
+                        onClick={() => removeChannel('email')}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                  
+                  {emailRolesExpanded && (
+                    <div className="space-y-4 pl-3">
+                      <div className="space-y-3">
+                        <h5 className="text-md font-medium text-gray-700">Roles</h5>
                         <TokenRow label="" ariaLabel="Search and select roles for email notifications">
                           <SearchDestination options={ROLES} selected={selectedEmailRoles} onAdd={addEmailRole} placeholder="Search to add roles" />
                         </TokenRow>
@@ -318,36 +406,35 @@ export default function DataQualityAlertsPage() {
                             ))}
                           </div>
                         )}
-                      </>
-                    )}
-                  </div>
+                      </div>
 
-                  {/* Users Subsection - Collapsed by default */}
-                  <div className="space-y-3">
-                    <button
-                      onClick={() => setEmailUsersExpanded(!emailUsersExpanded)}
-                      className="flex items-center gap-2 text-left hover:text-[var(--color-primary)] transition-colors"
-                    >
-                      <h5 className="text-md font-medium text-gray-700">Users</h5>
-                      {emailUsersExpanded ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
-                    </button>
-                    {emailUsersExpanded && (
-                      <>
-                        <TokenRow label="" ariaLabel="Add specific users for email notifications">
-                          <SearchDestination options={USER_OPTIONS} selected={emailUsers} onAdd={addEmailUser} />
-                        </TokenRow>
-                        {emailUsers.length > 0 && (
-                          <div className="min-h-[36px] flex flex-wrap gap-2">
-                            {emailUsers.map((u) => (
-                              <TagToken key={u} text={u} onRemove={() => removeEmailUser(u)} />
-                            ))}
-                          </div>
+                      <div className="space-y-3">
+                        <button
+                          onClick={() => setEmailUsersExpanded(!emailUsersExpanded)}
+                          className="flex items-center gap-2 text-left hover:text-blue-600 transition-colors"
+                        >
+                          <h5 className="text-md font-medium text-gray-700">Users</h5>
+                          {emailUsersExpanded ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
+                        </button>
+                        {emailUsersExpanded && (
+                          <>
+                            <TokenRow label="" ariaLabel="Add specific users for email notifications">
+                              <SearchDestination options={USER_OPTIONS} selected={emailUsers} onAdd={addEmailUser} />
+                            </TokenRow>
+                            {emailUsers.length > 0 && (
+                              <div className="min-h-[36px] flex flex-wrap gap-2">
+                                {emailUsers.map((u) => (
+                                  <TagToken key={u} text={u} onRemove={() => removeEmailUser(u)} />
+                                ))}
+                              </div>
+                            )}
+                          </>
                         )}
-                      </>
-                    )}
-                  </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
+              )}
 
               {/* In-App Section - Collapsed by default */}
               <div className="space-y-4 border border-[var(--border)] rounded-lg p-4 bg-[var(--panel-2)]">
