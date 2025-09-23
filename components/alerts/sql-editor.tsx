@@ -77,7 +77,7 @@ export const SQLEditor = forwardRef<SQLEditorHandle, SQLEditorProps>(function SQ
         options={{
           fontSize: 14,
           minimap: { enabled: false },
-          lineNumbers: "on",
+          lineNumbers: "off",
           glyphMargin: false,
           folding: true,
           scrollBeyondLastLine: false,

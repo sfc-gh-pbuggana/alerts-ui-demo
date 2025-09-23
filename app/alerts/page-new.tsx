@@ -7,10 +7,9 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import Sidebar from "@/components/sidebar"
 import Link from "next/link"
-import { Search, ChevronDown, Plus, X, Clock, User } from "lucide-react"
+import { Search, ChevronDown } from "lucide-react"
 import "@/styles/alerts.css"
 import { alertCategories } from "@/lib/alert-config"
 
@@ -94,7 +93,6 @@ const renderIcon = (iconType: string) => {
 }
 
 export default function AlertsNoCodePage() {
-  const [showCreateAlertDialog, setShowCreateAlertDialog] = useState(false)
   const [statusFilter, setStatusFilter] = useState("All")
   const [categoryFilter, setCategoryFilter] = useState("All")
   const [severityFilter, setSeverityFilter] = useState("All")
@@ -103,130 +101,6 @@ export default function AlertsNoCodePage() {
   const getCategoryPath = (categoryId: string) => {
     return `/alerts/${categoryId}`
   }
-
-  // Scheduled alerts data with SQL templates
-  const scheduledAlerts = [
-    {
-      id: "ALERT_001",
-      title: "COST_ANOMALY_DETECTION_PROD",
-      location: "COST_MANAGEMENT.ALERTS",
-      status: "Active",
-      viewed: "2 hours ago",
-      updated: "1 day ago",
-      owner: "ACCOUNTADMIN",
-      schedule: "Every 1 hour",
-      sql: `SELECT 
-  warehouse_name,
-  DATE_TRUNC('hour', start_time) as hour_bucket,
-  SUM(credits_used) as hourly_credits,
-  AVG(SUM(credits_used)) OVER (
-    PARTITION BY warehouse_name 
-    ORDER BY DATE_TRUNC('hour', start_time) 
-    ROWS BETWEEN 23 PRECEDING AND 1 PRECEDING
-  ) as avg_hourly_credits_24h
-FROM snowflake.account_usage.warehouse_metering_history 
-WHERE start_time >= DATEADD('day', -7, CURRENT_TIMESTAMP())
-  AND warehouse_name = 'PRODUCTION_WH'
-GROUP BY warehouse_name, DATE_TRUNC('hour', start_time)
-HAVING hourly_credits > (avg_hourly_credits_24h * 2.0)
-ORDER BY hour_bucket DESC;`
-    },
-    {
-      id: "ALERT_002", 
-      title: "SNOWPIPE_FAILURE_MONITOR",
-      location: "SNOWPIPE.MONITORING",
-      status: "Active",
-      viewed: "5 hours ago",
-      updated: "3 days ago",
-      owner: "ACCOUNTADMIN",
-      schedule: "Every 15 minutes",
-      sql: `SELECT 
-  pipe_name,
-  file_name,
-  last_load_time,
-  status,
-  error_message,
-  error_count
-FROM snowflake.account_usage.copy_history 
-WHERE status IN ('LOAD_FAILED', 'PARTIALLY_LOADED')
-  AND last_load_time >= DATEADD('minute', -15, CURRENT_TIMESTAMP())
-  AND pipe_name LIKE 'PROD_%'
-ORDER BY last_load_time DESC;`
-    },
-    {
-      id: "ALERT_003",
-      title: "DATA_QUALITY_CHECKER",
-      location: "DATA_QUALITY.CHECKS",
-      status: "Suspended",
-      viewed: "1 day ago",
-      updated: "1 week ago",
-      owner: "ACCOUNTADMIN",
-      schedule: "Every 6 hours",
-      sql: `SELECT 
-  table_catalog,
-  table_schema,
-  table_name,
-  COUNT(*) as total_rows,
-  COUNT(*) - COUNT(primary_key_column) as null_primary_keys,
-  (COUNT(*) - COUNT(primary_key_column)) / COUNT(*) * 100 as null_percentage
-FROM information_schema.tables t
-JOIN production_db.public.critical_tables ct ON ct.table_name = t.table_name
-WHERE table_schema = 'PUBLIC'
-  AND table_catalog = 'PRODUCTION_DB'
-GROUP BY table_catalog, table_schema, table_name
-HAVING null_percentage > 5.0
-ORDER BY null_percentage DESC;`
-    },
-    {
-      id: "ALERT_004",
-      title: "SECURITY_ACCESS_MONITOR",
-      location: "SECURITY.IAM_MONITORING",
-      status: "Active",
-      viewed: "3 days ago",
-      updated: "1 week ago",
-      owner: "ACCOUNTADMIN",
-      schedule: "Every 30 minutes",
-      sql: `SELECT 
-  user_name,
-  client_ip,
-  reported_client_type,
-  login_name,
-  event_timestamp,
-  COUNT(*) as failed_attempts
-FROM snowflake.account_usage.login_history
-WHERE success = 'NO'
-  AND event_timestamp >= DATEADD('minute', -30, CURRENT_TIMESTAMP())
-  AND user_name NOT LIKE 'SERVICE_%'
-GROUP BY user_name, client_ip, reported_client_type, login_name, event_timestamp
-HAVING failed_attempts >= 3
-ORDER BY event_timestamp DESC;`
-    },
-    {
-      id: "ALERT_005",
-      title: "SNOWPARK_JOB_WATCHER",
-      location: "SNOWPARK.JOB_MONITORING",
-      status: "Active",
-      viewed: "1 week ago",
-      updated: "2 weeks ago",
-      owner: "ACCOUNTADMIN",
-      schedule: "Every 2 hours",
-      sql: `SELECT 
-  job_name,
-  job_uuid,
-  start_time,
-  end_time,
-  status,
-  DATEDIFF('minute', start_time, COALESCE(end_time, CURRENT_TIMESTAMP())) as duration_minutes
-FROM snowflake.account_usage.task_history
-WHERE start_time >= DATEADD('hour', -2, CURRENT_TIMESTAMP())
-  AND job_name LIKE 'SNOWPARK_%'
-  AND (
-    status = 'FAILED' 
-    OR (status = 'RUNNING' AND duration_minutes > 120)
-  )
-ORDER BY start_time DESC;`
-    }
-  ]
 
   // Sample alert execution data
   const allAlertExecutions = [
@@ -336,145 +210,62 @@ ORDER BY start_time DESC;`
 
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto p-6">
-          {/* Welcome Banner */}
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-start justify-between">
-            <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center mt-0.5">
-                <span className="text-white text-xs">!</span>
-              </div>
-              <div>
-                <h3 className="font-semibold text-blue-900">Welcome to Alert Center!</h3>
-                <p className="text-blue-800 text-sm">
-                  To let your team create Alerts, you need to grant some privileges! 
-                  <Link href="/alert-editor" className="underline hover:no-underline">Here is an example script.</Link>
-                </p>
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-blue-600 hover:bg-blue-100"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-
+        <div className="max-w-7xl mx-auto">
           {/* Page Header */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold text-gray-900">Scheduled Alerts</h1>
-              <Button 
-                className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
-                onClick={() => setShowCreateAlertDialog(true)}
-              >
-                <Plus className="h-4 w-4" />
-                Create Alert
-                <ChevronDown className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Filters */}
-          <div className="mb-6 flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm">Database</span>
-              <Select defaultValue="All">
-                <SelectTrigger className="w-24 h-8">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="All">All</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm">Owner role</span>
-              <Select defaultValue="All">
-                <SelectTrigger className="w-24 h-8">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="All">All</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm">Group by</span>
-              <Select defaultValue="none">
-                <SelectTrigger className="w-32 h-8">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">none</SelectItem>
-                  <SelectItem value="category">Category</SelectItem>
-                  <SelectItem value="owner">Owner</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <span className="text-sm text-gray-600">{scheduledAlerts.length} alerts</span>
-            <div className="ml-auto">
-              <Button variant="outline" size="sm">
-                <Search className="w-4 h-4 mr-2" />
-                Search
-              </Button>
-            </div>
-          </div>
-
-          {/* Scheduled Alerts */}
           <div className="mb-8">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12"></TableHead>
-                  <TableHead className="font-medium">TITLE</TableHead>
-                  <TableHead className="font-medium">LOCATION</TableHead>
-                  <TableHead className="font-medium">STATUS</TableHead>
-                  <TableHead className="font-medium">
-                    <div className="flex items-center gap-1">
-                      VIEWED
-                      <ChevronDown className="w-3 h-3" />
+            <h1 className="text-3xl font-bold text-[var(--text)] mb-2">
+              Snowflake Alert Center
+            </h1>
+            <p className="text-lg text-[var(--subtle-text)] max-w-3xl">
+              Fast, Easy and Secure alerting with Snowflake. Monitor your features and workloads with pre-configured alert templates. 
+              Get started quickly with no-code alerts that notify you when things matter most.
+            </p>
+          </div>
+
+          {/* Alert Categories Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {alertCategories.map((category) => (
+              <Link key={category.id} href={getCategoryPath(category.id)}>
+                <Card 
+                  className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-[var(--border-bright)] bg-[var(--panel)] border-[var(--border)]"
+                >
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[var(--panel-3)] border border-[var(--border)]">
+                        {renderIcon(category.icon)}
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg font-semibold text-[var(--text)]">
+                          {category.name}
+                        </CardTitle>
+                        {category.preview && (
+                          <Badge variant="secondary" className="mt-1 bg-blue-600 text-white">
+                            PREVIEW
+                          </Badge>
+                        )}
+                      </div>
                     </div>
-                  </TableHead>
-                  <TableHead className="font-medium">UPDATED</TableHead>
-                  <TableHead className="font-medium">OWNER</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {scheduledAlerts.map((alert) => (
-                  <TableRow key={alert.id}>
-                    <TableCell>
-                      <div className="w-6 h-6 bg-orange-100 rounded flex items-center justify-center">
-                        <Clock className="w-4 h-4 text-orange-600" />
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Link 
-                        href={`/alert-editor?template=${encodeURIComponent(alert.sql)}&name=${encodeURIComponent(alert.title)}`} 
-                        className="text-blue-600 hover:underline font-medium"
-                      >
-                        {alert.title}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="text-sm text-gray-600">{alert.location}</TableCell>
-                    <TableCell>
-                      <Badge className={alert.status === "Active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
-                        {alert.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-sm text-gray-600">{alert.viewed}</TableCell>
-                    <TableCell className="text-sm text-gray-600">{alert.updated}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-gray-200 rounded flex items-center justify-center">
-                          <span className="text-xs">A</span>
-                        </div>
-                        <span className="text-sm">{alert.owner.substring(0, 12)}...</span>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      className="bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800"
+                    >
+                      Configure →
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-[var(--subtle-text)] mb-4">
+                    {category.description}
+                  </CardDescription>
+                  <div className="text-sm text-[var(--subtle-text)]">
+                    {category.templates.length} alert template{category.templates.length !== 1 ? 's' : ''} available
+                  </div>
+                </CardContent>
+                </Card>
+              </Link>
+            ))}
           </div>
 
           {/* Historical Alert Execution Runs */}
@@ -649,63 +440,9 @@ ORDER BY start_time DESC;`
               </CardContent>
             </Card>
           </div>
+        </div>
         </main>
       </div>
-
-      {/* Create Alert Dialog */}
-      <Dialog open={showCreateAlertDialog} onOpenChange={setShowCreateAlertDialog}>
-        <DialogContent className="max-w-none w-[90vw] max-h-[90vh] overflow-y-auto" style={{ width: '90vw', maxWidth: 'none' }}>
-          <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">Create New Alert</DialogTitle>
-            <DialogDescription>
-              Choose an alert category to get started with pre-configured templates
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-8 p-4">
-            {alertCategories.map((category) => (
-              <Link key={category.id} href={getCategoryPath(category.id)}>
-                <Card className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-blue-300 bg-white border-gray-200 h-full">
-                  <CardHeader className="pb-4">
-                    <div className="flex flex-col items-center text-center gap-4">
-                      <div className="flex items-center justify-center w-16 h-16 rounded-lg bg-blue-50 border border-blue-200">
-                        {renderIcon(category.icon)}
-                      </div>
-                      <div>
-                        <CardTitle className="text-xl font-semibold text-gray-900 mb-2">
-                          {category.name}
-                        </CardTitle>
-                        {category.preview && (
-                          <Badge variant="secondary" className="bg-blue-600 text-white text-xs">
-                            PREVIEW
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <CardDescription className="text-gray-600 mb-6 text-center leading-relaxed">
-                      {category.description}
-                    </CardDescription>
-                    <div className="text-sm text-gray-500 text-center">
-                      {category.templates.length} template{category.templates.length !== 1 ? 's' : ''} available
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-
-          <div className="flex justify-end pt-4 border-t">
-            <Button 
-              variant="outline"
-              onClick={() => setShowCreateAlertDialog(false)}
-            >
-              Cancel
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

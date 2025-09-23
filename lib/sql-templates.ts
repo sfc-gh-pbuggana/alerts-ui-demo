@@ -301,6 +301,77 @@ WHERE last_altered >= current_timestamp() - INTERVAL '24 HOURS'
 ORDER BY last_altered DESC`
   },
 
+  "null-coverage-threshold": {
+    id: "null-coverage-threshold",
+    name: "NULL Coverage Threshold",
+    category: "data-quality",
+    sql: `-- Monitor NULL coverage exceeding threshold
+SELECT
+  table_schema,
+  table_name,
+  column_name,
+  (null_count::FLOAT / total_count::FLOAT * 100) AS null_percentage,
+  null_count,
+  total_count,
+  current_timestamp() AS check_time
+FROM (
+  SELECT
+    table_schema,
+    table_name,
+    column_name,
+    SUM(CASE WHEN column_value IS NULL THEN 1 ELSE 0 END) AS null_count,
+    COUNT(*) AS total_count
+  FROM information_schema.table_storage_metrics
+  WHERE table_schema IN ('PRODUCTION', 'ANALYTICS')
+  GROUP BY table_schema, table_name, column_name
+)
+WHERE (null_count::FLOAT / total_count::FLOAT * 100) > {{NULL_THRESHOLD}}
+ORDER BY null_percentage DESC`
+  },
+
+  "data-anomaly-detection": {
+    id: "data-anomaly-detection",
+    name: "Data Anomaly Detection",
+    category: "data-quality",
+    sql: `-- Detect data anomalies using statistical analysis
+SELECT
+  table_schema,
+  table_name,
+  metric_name,
+  current_value,
+  avg_value_7_days,
+  stddev_value_7_days,
+  (current_value - avg_value_7_days) / NULLIF(stddev_value_7_days, 0) AS z_score,
+  CASE 
+    WHEN ABS((current_value - avg_value_7_days) / NULLIF(stddev_value_7_days, 0)) > 2 THEN 'ANOMALY'
+    ELSE 'NORMAL'
+  END AS anomaly_status,
+  current_timestamp() AS detection_time
+FROM (
+  SELECT
+    table_schema,
+    table_name,
+    'row_count' AS metric_name,
+    row_count AS current_value,
+    AVG(row_count) OVER (
+      PARTITION BY table_schema, table_name 
+      ORDER BY last_altered 
+      ROWS BETWEEN 7 PRECEDING AND 1 PRECEDING
+    ) AS avg_value_7_days,
+    STDDEV(row_count) OVER (
+      PARTITION BY table_schema, table_name 
+      ORDER BY last_altered 
+      ROWS BETWEEN 7 PRECEDING AND 1 PRECEDING
+    ) AS stddev_value_7_days
+  FROM information_schema.tables
+  WHERE table_type = 'BASE TABLE'
+    AND table_schema IN ('PRODUCTION', 'ANALYTICS')
+    AND last_altered >= current_date() - 1
+)
+WHERE ABS((current_value - avg_value_7_days) / NULLIF(stddev_value_7_days, 0)) > 2
+ORDER BY ABS(z_score) DESC`
+  },
+
   // Cost Management Templates
   "resource-monitor-notification": {
     id: "resource-monitor-notification",
@@ -346,6 +417,44 @@ WHERE start_time >= current_date() - 1
 GROUP BY warehouse_name, DATE(start_time)
 HAVING cost_spike_ratio > 2.0
 ORDER BY cost_spike_ratio DESC`
+  },
+
+  "budget-threshold-alerts": {
+    id: "budget-threshold-alerts",
+    name: "Budget Threshold Alerts",
+    category: "cost-management",
+    sql: `-- Monitor spending against custom budget thresholds
+SELECT
+  budget_category,
+  current_spend,
+  budget_threshold,
+  (current_spend / budget_threshold * 100) AS budget_utilization_percent,
+  CASE
+    WHEN current_spend >= budget_threshold THEN 'EXCEEDED'
+    WHEN current_spend >= budget_threshold * 0.9 THEN 'WARNING'
+    WHEN current_spend >= budget_threshold * 0.8 THEN 'CAUTION'
+    ELSE 'NORMAL'
+  END AS threshold_status,
+  period_start,
+  period_end
+FROM (
+  SELECT
+    CASE
+      WHEN warehouse_name LIKE '%PROD%' THEN 'Production'
+      WHEN warehouse_name LIKE '%DEV%' THEN 'Development'
+      WHEN warehouse_name LIKE '%TEST%' THEN 'Testing'
+      ELSE 'Other'
+    END AS budget_category,
+    SUM(credits_used * 3.00) AS current_spend,  -- Assuming $3 per credit
+    {{BUDGET_THRESHOLDS}} AS budget_threshold,
+    DATE_TRUNC('month', start_time) AS period_start,
+    LAST_DAY(DATE_TRUNC('month', start_time)) AS period_end
+  FROM account_usage.warehouse_metering_history
+  WHERE start_time >= DATE_TRUNC('month', current_date())
+  GROUP BY budget_category, period_start, period_end
+)
+WHERE current_spend >= budget_threshold * 0.8  -- Alert at 80% of budget
+ORDER BY budget_utilization_percent DESC`
   },
 
   // Trust Center Templates

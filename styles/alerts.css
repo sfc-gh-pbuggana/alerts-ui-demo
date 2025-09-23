@@ -117,6 +117,27 @@
   border: none !important;
 }
 
+/* Ensure all dialogs have proper button styling regardless of theme class */
+[data-slot="dialog-content"] button.bg-blue-600 {
+  background-color: #2563eb !important;
+  color: white !important;
+}
+
+[data-slot="dialog-content"] button.bg-blue-600:hover {
+  background-color: #1d4ed8 !important;
+}
+
+[data-slot="dialog-content"] button.bg-blue-600:disabled {
+  background-color: #d1d5db !important;
+  color: #6b7280 !important;
+}
+
+/* Ensure Create Alert dialog is properly sized */
+[data-slot="dialog-content"][style*="90vw"] {
+  width: 90vw !important;
+  max-width: none !important;
+}
+
 /* Optional: small shadow for inline AI row focus ring parity */
 .sf-ai-row {
   box-shadow: 0 0 0 1px rgba(41, 181, 232, 0.25);

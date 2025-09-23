@@ -7,94 +7,312 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import Sidebar from "@/components/sidebar"
 import Link from "next/link"
-import { Search, ChevronDown, Plus, X, Clock, User } from "lucide-react"
+import { Search, ChevronDown } from "lucide-react"
 import "@/styles/alerts.css"
 import { alertCategories } from "@/lib/alert-config"
 
-// Icon components for rendering
+// Updated SVG icons to match specifications
+const SnowpipeIcon = ({ className }: { className?: string }) => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <rect x="2" y="10" width="20" height="4" rx="2" stroke="currentColor" strokeWidth="2"/>
+    <rect x="4" y="8" width="2" height="8" stroke="currentColor" strokeWidth="2"/>
+    <rect x="18" y="8" width="2" height="8" stroke="currentColor" strokeWidth="2"/>
+    <circle cx="6" cy="12" r="1" fill="currentColor"/>
+    <circle cx="12" cy="12" r="1" fill="currentColor"/>
+    <circle cx="18" cy="12" r="1" fill="currentColor"/>
+    <path d="M1 12h2M21 12h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+  </svg>
+)
+
+const SnowparkIcon = ({ className }: { className?: string }) => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" strokeWidth="2"/>
+    <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <circle cx="12" cy="6" r="1" fill="currentColor"/>
+    <path d="M16 6l2-2M16 6l2 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+  </svg>
+)
+
+const OpenFlowIcon = ({ className }: { className?: string }) => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <circle cx="6" cy="6" r="3" stroke="currentColor" strokeWidth="2"/>
+    <circle cx="18" cy="6" r="3" stroke="currentColor" strokeWidth="2"/>
+    <circle cx="6" cy="18" r="3" stroke="currentColor" strokeWidth="2"/>
+    <circle cx="18" cy="18" r="3" stroke="currentColor" strokeWidth="2"/>
+    <path d="M9 6h6M9 18h6M6 9v6M18 9v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M8.5 7.5l7 7M15.5 7.5l-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <circle cx="6" cy="6" r="1" fill="currentColor"/>
+    <circle cx="18" cy="18" r="1" fill="currentColor"/>
+  </svg>
+)
+
+const DataQualityIcon = ({ className }: { className?: string }) => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <ellipse cx="12" cy="5" rx="9" ry="3" stroke="currentColor" strokeWidth="2"/>
+    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" stroke="currentColor" strokeWidth="2"/>
+    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" stroke="currentColor" strokeWidth="2"/>
+    <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3" stroke="currentColor" strokeWidth="2"/>
+  </svg>
+)
+
+const CostManagementIcon = ({ className }: { className?: string }) => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <path d="M4 2h16l-2 20H6L4 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M6 6h12" stroke="currentColor" strokeWidth="2"/>
+    <path d="M7 10h10" stroke="currentColor" strokeWidth="1.5"/>
+    <path d="M7 13h8" stroke="currentColor" strokeWidth="1.5"/>
+    <path d="M7 16h6" stroke="currentColor" strokeWidth="1.5"/>
+    <circle cx="12" cy="4" r="1" fill="currentColor"/>
+  </svg>
+)
+
+const TrustCenterIcon = ({ className }: { className?: string }) => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="2"/>
+    <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+)
+
+const SecurityIAMIcon = ({ className }: { className?: string }) => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2"/>
+    <path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2" stroke="currentColor" strokeWidth="2"/>
+    <rect x="16" y="11" width="6" height="8" rx="2" stroke="currentColor" strokeWidth="2"/>
+    <circle cx="19" cy="15" r="1" fill="currentColor"/>
+    <path d="M17 11V9a2 2 0 114 0v2" stroke="currentColor" strokeWidth="2"/>
+  </svg>
+)
+
+  {
+    id: "snowpipe",
+    name: "Snowpipe",
+    description: "Monitor data ingestion pipelines for failures, delays, and performance issues",
+    icon: "snowpipe",
+    templates: [
+      {
+        id: "snowpipe-error",
+        name: "Snowpipe Error Detection",
+        description: "Monitor Snowpipe errors and queue reading issues",
+        enabled: false
+      },
+      {
+        id: "snowpipe-latency",
+        name: "Snowpipe Latency Alert",
+        description: "Alert on pipes with high latency (30+ minutes)",
+        enabled: false
+      }
+    ]
+  },
+  {
+    id: "snowpark",
+    name: "Snowpark",
+    description: "Monitor Snowpark UDFs and stored procedures for errors and performance issues",
+    icon: "snowpark",
+    templates: [
+      {
+        id: "snowpark-error-logs",
+        name: "Snowpark Error Logs",
+        description: "Monitor ERROR and FATAL level messages from UDFs and stored procedures",
+        enabled: false
+      },
+      {
+        id: "snowpark-high-cpu",
+        name: "High CPU Utilization",
+        description: "Alert on UDFs and stored procedures with high CPU utilization",
+        enabled: false
+      },
+      {
+        id: "snowpark-high-memory",
+        name: "High Memory Utilization",
+        description: "Alert on UDFs and stored procedures with high memory utilization",
+        enabled: false
+      },
+      {
+        id: "snowpark-long-running",
+        name: "Long-Running Functions",
+        description: "Alert on UDFs and stored procedures taking longer than 2 minutes",
+        enabled: false
+      }
+    ]
+  },
+  {
+    id: "openflow",
+    name: "OpenFlow",
+    description: "Track workflow execution status and performance metrics",
+    icon: "openflow",
+    templates: [
+      {
+        id: "connector-backpressure",
+        name: "Connector Backpressure",
+        description: "Monitor connector backpressure for sustained periods",
+        enabled: false
+      },
+      {
+        id: "no-data-ingested",
+        name: "No Data Ingested",
+        description: "Alert when connector hasn't written data for 4+ hours",
+        enabled: false
+      },
+      {
+        id: "large-data-queued",
+        name: "Large Amount of Data Queued",
+        description: "Alert when connection has excessive queued data",
+        enabled: false
+      },
+      {
+        id: "high-error-rate",
+        name: "High Error Rate",
+        description: "Alert when connector components have high error rates",
+        enabled: false
+      },
+      {
+        id: "high-cpu-runtime",
+        name: "High CPU Utilization (Runtime)",
+        description: "Alert when runtime CPU exceeds 90% for sustained period",
+        enabled: false
+      },
+      {
+        id: "runtime-autoscaling",
+        name: "Runtime Autoscaling Event",
+        description: "Informational alert for autoscaling events",
+        enabled: false
+      },
+      {
+        id: "low-disk-space",
+        name: "Low Disk Space",
+        description: "Alert when NiFi volumes reach 80% capacity",
+        enabled: false
+      }
+    ]
+  },
+  {
+    id: "data-quality",
+    name: "Data Quality",
+    description: "Ensure data integrity with automated quality checks and alerts",
+    icon: "data-quality",
+    templates: [
+      {
+        id: "data-freshness",
+        name: "Data Freshness",
+        description: "Alert when data becomes stale or outdated",
+        enabled: false
+      },
+      {
+        id: "schema-drift",
+        name: "Schema Drift Detection",
+        description: "Detect unexpected changes in data schema",
+        enabled: false
+      },
+      {
+        id: "null-coverage-threshold",
+        name: "NULL Coverage Threshold",
+        description: "Monitor NULL coverage exceeding specified threshold",
+        enabled: false
+      },
+      {
+        id: "data-anomaly-detection",
+        name: "Data Anomaly Detection",
+        description: "Detect data anomalies using statistical analysis",
+        enabled: false
+      }
+    ]
+  },
+  {
+    id: "cost-management",
+    name: "Cost Management",
+    description: "Monitor spending and resource usage to optimize costs",
+    icon: "cost-management",
+    templates: [
+      {
+        id: "resource-monitor-notification",
+        name: "Resource Monitor Notifications",
+        description: "Receive email notifications from resource monitors",
+        enabled: false
+      },
+      {
+        id: "cost-spike",
+        name: "Cost Spike Detection",
+        description: "Get alerted when costs exceed predefined thresholds",
+        enabled: false
+      },
+      {
+        id: "budget-threshold-alerts",
+        name: "Budget Threshold Alerts",
+        description: "Monitor spending against custom budget thresholds",
+        enabled: false
+      }
+    ]
+  },
+  {
+    id: "trust-center",
+    name: "Trust Center",
+    description: "Monitor compliance and governance requirements",
+    icon: "trust-center",
+    templates: [
+      {
+        id: "mfa-notification",
+        name: "MFA Notification",
+        description: "Receive email and in-app notification with MFA health status updates",
+        enabled: false
+      },
+      {
+        id: "weekly-digest",
+        name: "Weekly Digest",
+        description: "Receive weekly summary of security updates via email and in-app notification",
+        enabled: false
+      }
+    ]
+  },
+  {
+    id: "security-iam",
+    name: "Security & IAM",
+    description: "Protect your data with identity and access management alerts",
+    icon: "security-iam",
+    templates: [
+      {
+        id: "unauthorized-access",
+        name: "Unauthorized Access Attempts",
+        description: "Detect suspicious login attempts and access patterns",
+        enabled: false
+      },
+      {
+        id: "privilege-escalation",
+        name: "Privilege Escalation",
+        description: "Monitor changes to user permissions and roles",
+        enabled: false
+      }
+    ]
+  }
+]
+
+
+// Function to render appropriate icon
 const renderIcon = (iconType: string) => {
-  const iconProps = { className: "text-blue-600" }
+  const iconProps = { className: "text-[var(--color-primary)]" }
   
   switch (iconType) {
     case "snowpipe":
-      return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={iconProps.className}>
-          <rect x="2" y="10" width="20" height="4" rx="2" stroke="currentColor" strokeWidth="2"/>
-          <rect x="4" y="8" width="2" height="8" stroke="currentColor" strokeWidth="2"/>
-          <rect x="18" y="8" width="2" height="8" stroke="currentColor" strokeWidth="2"/>
-          <circle cx="6" cy="12" r="1" fill="currentColor"/>
-          <circle cx="12" cy="12" r="1" fill="currentColor"/>
-          <circle cx="18" cy="12" r="1" fill="currentColor"/>
-          <path d="M1 12h2M21 12h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-        </svg>
-      )
+      return <SnowpipeIcon {...iconProps} />
     case "snowpark":
-      return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={iconProps.className}>
-          <rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" strokeWidth="2"/>
-          <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-          <circle cx="12" cy="6" r="1" fill="currentColor"/>
-          <path d="M16 6l2-2M16 6l2 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-        </svg>
-      )
+      return <SnowparkIcon {...iconProps} />
     case "openflow":
-      return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={iconProps.className}>
-          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2"/>
-        </svg>
-      )
+      return <OpenFlowIcon {...iconProps} />
     case "data-quality":
-      return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={iconProps.className}>
-          <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" strokeWidth="2"/>
-          <path d="M7 8h10M7 12h8M7 16h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-          <circle cx="19" cy="7" r="2" fill="currentColor"/>
-        </svg>
-      )
+      return <DataQualityIcon {...iconProps} />
     case "cost-management":
-      return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={iconProps.className}>
-          <path d="M4 2h16l-2 20H6L4 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M6 6h12" stroke="currentColor" strokeWidth="2"/>
-          <path d="M7 10h10" stroke="currentColor" strokeWidth="1.5"/>
-          <path d="M7 13h8" stroke="currentColor" strokeWidth="1.5"/>
-          <path d="M7 16h6" stroke="currentColor" strokeWidth="1.5"/>
-          <circle cx="12" cy="4" r="1" fill="currentColor"/>
-        </svg>
-      )
+      return <CostManagementIcon {...iconProps} />
     case "trust-center":
-      return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={iconProps.className}>
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="2"/>
-          <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      )
+      return <TrustCenterIcon {...iconProps} />
     case "security-iam":
-      return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={iconProps.className}>
-          <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2"/>
-          <path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2" stroke="currentColor" strokeWidth="2"/>
-          <rect x="16" y="11" width="6" height="8" rx="2" stroke="currentColor" strokeWidth="2"/>
-          <circle cx="19" cy="15" r="1" fill="currentColor"/>
-          <path d="M17 11V9a2 2 0 114 0v2" stroke="currentColor" strokeWidth="2"/>
-        </svg>
-      )
+      return <SecurityIAMIcon {...iconProps} />
     default:
-      return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={iconProps.className}>
-          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
-          <path d="M12 8v4l3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      )
+      return <SnowpipeIcon {...iconProps} />
   }
 }
 
 export default function AlertsNoCodePage() {
-  const [showCreateAlertDialog, setShowCreateAlertDialog] = useState(false)
   const [statusFilter, setStatusFilter] = useState("All")
   const [categoryFilter, setCategoryFilter] = useState("All")
   const [severityFilter, setSeverityFilter] = useState("All")
@@ -103,130 +321,6 @@ export default function AlertsNoCodePage() {
   const getCategoryPath = (categoryId: string) => {
     return `/alerts/${categoryId}`
   }
-
-  // Scheduled alerts data with SQL templates
-  const scheduledAlerts = [
-    {
-      id: "ALERT_001",
-      title: "COST_ANOMALY_DETECTION_PROD",
-      location: "COST_MANAGEMENT.ALERTS",
-      status: "Active",
-      viewed: "2 hours ago",
-      updated: "1 day ago",
-      owner: "ACCOUNTADMIN",
-      schedule: "Every 1 hour",
-      sql: `SELECT 
-  warehouse_name,
-  DATE_TRUNC('hour', start_time) as hour_bucket,
-  SUM(credits_used) as hourly_credits,
-  AVG(SUM(credits_used)) OVER (
-    PARTITION BY warehouse_name 
-    ORDER BY DATE_TRUNC('hour', start_time) 
-    ROWS BETWEEN 23 PRECEDING AND 1 PRECEDING
-  ) as avg_hourly_credits_24h
-FROM snowflake.account_usage.warehouse_metering_history 
-WHERE start_time >= DATEADD('day', -7, CURRENT_TIMESTAMP())
-  AND warehouse_name = 'PRODUCTION_WH'
-GROUP BY warehouse_name, DATE_TRUNC('hour', start_time)
-HAVING hourly_credits > (avg_hourly_credits_24h * 2.0)
-ORDER BY hour_bucket DESC;`
-    },
-    {
-      id: "ALERT_002", 
-      title: "SNOWPIPE_FAILURE_MONITOR",
-      location: "SNOWPIPE.MONITORING",
-      status: "Active",
-      viewed: "5 hours ago",
-      updated: "3 days ago",
-      owner: "ACCOUNTADMIN",
-      schedule: "Every 15 minutes",
-      sql: `SELECT 
-  pipe_name,
-  file_name,
-  last_load_time,
-  status,
-  error_message,
-  error_count
-FROM snowflake.account_usage.copy_history 
-WHERE status IN ('LOAD_FAILED', 'PARTIALLY_LOADED')
-  AND last_load_time >= DATEADD('minute', -15, CURRENT_TIMESTAMP())
-  AND pipe_name LIKE 'PROD_%'
-ORDER BY last_load_time DESC;`
-    },
-    {
-      id: "ALERT_003",
-      title: "DATA_QUALITY_CHECKER",
-      location: "DATA_QUALITY.CHECKS",
-      status: "Suspended",
-      viewed: "1 day ago",
-      updated: "1 week ago",
-      owner: "ACCOUNTADMIN",
-      schedule: "Every 6 hours",
-      sql: `SELECT 
-  table_catalog,
-  table_schema,
-  table_name,
-  COUNT(*) as total_rows,
-  COUNT(*) - COUNT(primary_key_column) as null_primary_keys,
-  (COUNT(*) - COUNT(primary_key_column)) / COUNT(*) * 100 as null_percentage
-FROM information_schema.tables t
-JOIN production_db.public.critical_tables ct ON ct.table_name = t.table_name
-WHERE table_schema = 'PUBLIC'
-  AND table_catalog = 'PRODUCTION_DB'
-GROUP BY table_catalog, table_schema, table_name
-HAVING null_percentage > 5.0
-ORDER BY null_percentage DESC;`
-    },
-    {
-      id: "ALERT_004",
-      title: "SECURITY_ACCESS_MONITOR",
-      location: "SECURITY.IAM_MONITORING",
-      status: "Active",
-      viewed: "3 days ago",
-      updated: "1 week ago",
-      owner: "ACCOUNTADMIN",
-      schedule: "Every 30 minutes",
-      sql: `SELECT 
-  user_name,
-  client_ip,
-  reported_client_type,
-  login_name,
-  event_timestamp,
-  COUNT(*) as failed_attempts
-FROM snowflake.account_usage.login_history
-WHERE success = 'NO'
-  AND event_timestamp >= DATEADD('minute', -30, CURRENT_TIMESTAMP())
-  AND user_name NOT LIKE 'SERVICE_%'
-GROUP BY user_name, client_ip, reported_client_type, login_name, event_timestamp
-HAVING failed_attempts >= 3
-ORDER BY event_timestamp DESC;`
-    },
-    {
-      id: "ALERT_005",
-      title: "SNOWPARK_JOB_WATCHER",
-      location: "SNOWPARK.JOB_MONITORING",
-      status: "Active",
-      viewed: "1 week ago",
-      updated: "2 weeks ago",
-      owner: "ACCOUNTADMIN",
-      schedule: "Every 2 hours",
-      sql: `SELECT 
-  job_name,
-  job_uuid,
-  start_time,
-  end_time,
-  status,
-  DATEDIFF('minute', start_time, COALESCE(end_time, CURRENT_TIMESTAMP())) as duration_minutes
-FROM snowflake.account_usage.task_history
-WHERE start_time >= DATEADD('hour', -2, CURRENT_TIMESTAMP())
-  AND job_name LIKE 'SNOWPARK_%'
-  AND (
-    status = 'FAILED' 
-    OR (status = 'RUNNING' AND duration_minutes > 120)
-  )
-ORDER BY start_time DESC;`
-    }
-  ]
 
   // Sample alert execution data
   const allAlertExecutions = [
@@ -317,16 +411,19 @@ ORDER BY start_time DESC;`
           <Separator orientation="vertical" className="h-6 bg-[var(--border)]" />
           <nav className="text-sm text-[var(--subtle-text)] truncate">
             <span className="text-[var(--text)] font-medium">Alert Center</span>
+            <span className="mx-2 text-[var(--subtle-text)]">/</span>
+            <span className="text-[var(--text)]">Alerts</span>
           </nav>
         </div>
         <div className="flex items-center gap-4 shrink-0">
+          {/* Top-right corner elements similar to Snowflake UI */}
           <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--panel-3)] border border-[var(--border)]">
             <div className="w-2 h-2 rounded-full bg-green-500"></div>
             <span className="text-sm font-medium">PRODUCT_MANAGER</span>
             <span className="text-sm text-[var(--subtle-text)]">SNOWMDOC (2X-Large)</span>
           </div>
           <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--panel-3)] border border-[var(--border)]">
-            <div className="w-4 h-4 rounded bg-blue-600 flex items-center justify-center">
+            <div className="w-4 h-4 rounded bg-[var(--color-primary)] flex items-center justify-center">
               <span className="text-xs text-white font-bold">S</span>
             </div>
             <span className="text-sm font-medium">SNOWSCIENCE</span>
@@ -336,145 +433,62 @@ ORDER BY start_time DESC;`
 
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto p-6">
-          {/* Welcome Banner */}
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-start justify-between">
-            <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center mt-0.5">
-                <span className="text-white text-xs">!</span>
-              </div>
-              <div>
-                <h3 className="font-semibold text-blue-900">Welcome to Alert Center!</h3>
-                <p className="text-blue-800 text-sm">
-                  To let your team create Alerts, you need to grant some privileges! 
-                  <Link href="/alert-editor" className="underline hover:no-underline">Here is an example script.</Link>
-                </p>
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-blue-600 hover:bg-blue-100"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-
+        <div className="max-w-7xl mx-auto">
           {/* Page Header */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold text-gray-900">Scheduled Alerts</h1>
-              <Button 
-                className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
-                onClick={() => setShowCreateAlertDialog(true)}
-              >
-                <Plus className="h-4 w-4" />
-                Create Alert
-                <ChevronDown className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Filters */}
-          <div className="mb-6 flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm">Database</span>
-              <Select defaultValue="All">
-                <SelectTrigger className="w-24 h-8">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="All">All</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm">Owner role</span>
-              <Select defaultValue="All">
-                <SelectTrigger className="w-24 h-8">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="All">All</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm">Group by</span>
-              <Select defaultValue="none">
-                <SelectTrigger className="w-32 h-8">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">none</SelectItem>
-                  <SelectItem value="category">Category</SelectItem>
-                  <SelectItem value="owner">Owner</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <span className="text-sm text-gray-600">{scheduledAlerts.length} alerts</span>
-            <div className="ml-auto">
-              <Button variant="outline" size="sm">
-                <Search className="w-4 h-4 mr-2" />
-                Search
-              </Button>
-            </div>
-          </div>
-
-          {/* Scheduled Alerts */}
           <div className="mb-8">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12"></TableHead>
-                  <TableHead className="font-medium">TITLE</TableHead>
-                  <TableHead className="font-medium">LOCATION</TableHead>
-                  <TableHead className="font-medium">STATUS</TableHead>
-                  <TableHead className="font-medium">
-                    <div className="flex items-center gap-1">
-                      VIEWED
-                      <ChevronDown className="w-3 h-3" />
+            <h1 className="text-3xl font-bold text-[var(--text)] mb-2">
+              Snowflake Alert Center
+            </h1>
+            <p className="text-lg text-[var(--subtle-text)] max-w-3xl">
+              Fast, Easy and Secure alerting with Snowflake. Monitor your features and workloads with pre-configured alert templates. 
+              Get started quickly with no-code alerts that notify you when things matter most.
+            </p>
+          </div>
+
+          {/* Alert Categories Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {alertCategories.map((category) => (
+              <Link key={category.id} href={getCategoryPath(category.id)}>
+                <Card 
+                  className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-[var(--border-bright)] bg-[var(--panel)] border-[var(--border)]"
+                >
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[var(--panel-3)] border border-[var(--border)]">
+                        {renderIcon(category.icon)}
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg font-semibold text-[var(--text)]">
+                          {category.name}
+                        </CardTitle>
+                        {category.id === "snowpipe" && (
+                          <Badge variant="secondary" className="mt-1 bg-[var(--color-primary)] text-white">
+                            PREVIEW
+                          </Badge>
+                        )}
+                      </div>
                     </div>
-                  </TableHead>
-                  <TableHead className="font-medium">UPDATED</TableHead>
-                  <TableHead className="font-medium">OWNER</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {scheduledAlerts.map((alert) => (
-                  <TableRow key={alert.id}>
-                    <TableCell>
-                      <div className="w-6 h-6 bg-orange-100 rounded flex items-center justify-center">
-                        <Clock className="w-4 h-4 text-orange-600" />
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Link 
-                        href={`/alert-editor?template=${encodeURIComponent(alert.sql)}&name=${encodeURIComponent(alert.title)}`} 
-                        className="text-blue-600 hover:underline font-medium"
-                      >
-                        {alert.title}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="text-sm text-gray-600">{alert.location}</TableCell>
-                    <TableCell>
-                      <Badge className={alert.status === "Active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
-                        {alert.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-sm text-gray-600">{alert.viewed}</TableCell>
-                    <TableCell className="text-sm text-gray-600">{alert.updated}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-gray-200 rounded flex items-center justify-center">
-                          <span className="text-xs">A</span>
-                        </div>
-                        <span className="text-sm">{alert.owner.substring(0, 12)}...</span>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      className="bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] active:bg-[var(--color-primary-pressed)]"
+                    >
+                      Configure →
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-[var(--subtle-text)] mb-4">
+                    {category.description}
+                  </CardDescription>
+                  <div className="text-sm text-[var(--subtle-text)]">
+                    {category.templates.length} alert template{category.templates.length !== 1 ? 's' : ''} available
+                  </div>
+                </CardContent>
+                </Card>
+              </Link>
+            ))}
           </div>
 
           {/* Historical Alert Execution Runs */}
@@ -649,63 +663,9 @@ ORDER BY start_time DESC;`
               </CardContent>
             </Card>
           </div>
+        </div>
         </main>
       </div>
-
-      {/* Create Alert Dialog */}
-      <Dialog open={showCreateAlertDialog} onOpenChange={setShowCreateAlertDialog}>
-        <DialogContent className="max-w-none w-[90vw] max-h-[90vh] overflow-y-auto" style={{ width: '90vw', maxWidth: 'none' }}>
-          <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">Create New Alert</DialogTitle>
-            <DialogDescription>
-              Choose an alert category to get started with pre-configured templates
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-8 p-4">
-            {alertCategories.map((category) => (
-              <Link key={category.id} href={getCategoryPath(category.id)}>
-                <Card className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-blue-300 bg-white border-gray-200 h-full">
-                  <CardHeader className="pb-4">
-                    <div className="flex flex-col items-center text-center gap-4">
-                      <div className="flex items-center justify-center w-16 h-16 rounded-lg bg-blue-50 border border-blue-200">
-                        {renderIcon(category.icon)}
-                      </div>
-                      <div>
-                        <CardTitle className="text-xl font-semibold text-gray-900 mb-2">
-                          {category.name}
-                        </CardTitle>
-                        {category.preview && (
-                          <Badge variant="secondary" className="bg-blue-600 text-white text-xs">
-                            PREVIEW
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <CardDescription className="text-gray-600 mb-6 text-center leading-relaxed">
-                      {category.description}
-                    </CardDescription>
-                    <div className="text-sm text-gray-500 text-center">
-                      {category.templates.length} template{category.templates.length !== 1 ? 's' : ''} available
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-
-          <div className="flex justify-end pt-4 border-t">
-            <Button 
-              variant="outline"
-              onClick={() => setShowCreateAlertDialog(false)}
-            >
-              Cancel
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

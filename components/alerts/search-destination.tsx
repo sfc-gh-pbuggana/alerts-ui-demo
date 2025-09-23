@@ -53,10 +53,10 @@ export function SearchDestination({
           setTempSelection(selected)
           setOpen(true)
         }}
-        className="h-9 border-[var(--border)] bg-[var(--panel-3)] text-[var(--text)] placeholder:text-[var(--subtle-text)]"
+        className="h-9 border-gray-300 bg-gray-50 text-gray-900 placeholder:text-gray-500"
       />
       <Button
-        className="h-9 bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] active:bg-[var(--color-primary-pressed)]"
+        className="h-9 bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800"
         onClick={() => {
           tempSelection
             .filter((u) => !selected.includes(u))
@@ -70,24 +70,24 @@ export function SearchDestination({
       </Button>
 
       {open && (
-        <div className="absolute left-0 right-0 top-10 z-50 rounded-md border border-[var(--border)] bg-white shadow-md" role="listbox">
-          <div className="px-3 py-2 border-b border-[var(--border)]">
+        <div className="absolute left-0 right-0 top-10 z-50 rounded-md border border-gray-300 bg-white shadow-md" role="listbox">
+          <div className="px-3 py-2 border-b border-gray-300">
             <Input
               placeholder="Search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="h-8 bg-[var(--panel-3)] border-[var(--border)] text-[var(--text)]"
+              className="h-8 bg-gray-50 border-gray-300 text-gray-900"
             />
           </div>
           {results.length === 0 ? (
-            <div className="px-3 py-2 text-sm text-[var(--subtle-text)]">No matches</div>
+            <div className="px-3 py-2 text-sm text-gray-600">No matches</div>
           ) : (
             <div className="max-h-56 overflow-auto py-1">
               {results.map((r) => {
                 const checked = tempSelection.includes(r)
                 const disabled = selected.includes(r)
                 return (
-                  <label key={r} className={`flex items-center gap-2 px-3 py-2 text-sm ${disabled ? "opacity-60" : "hover:bg-[var(--panel-3)]"}`}>
+                  <label key={r} className={`flex items-center gap-2 px-3 py-2 text-sm ${disabled ? "opacity-60" : "hover:bg-gray-50"}`}>
                     <Checkbox
                       checked={checked}
                       onCheckedChange={(v) => {
@@ -102,7 +102,7 @@ export function SearchDestination({
               })}
             </div>
           )}
-          <div className="flex items-center justify-between gap-2 px-3 py-2 border-t border-[var(--border)] bg-[var(--panel)]">
+          <div className="flex items-center justify-between gap-2 px-3 py-2 border-t border-gray-300 bg-white">
             <Button
               variant="outline"
               className="h-8"
@@ -114,7 +114,7 @@ export function SearchDestination({
               Cancel
             </Button>
             <Button
-              className="h-8 bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] active:bg-[var(--color-primary-pressed)]"
+              className="h-8 bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800"
               onClick={() => {
                 tempSelection
                   .filter((u) => !selected.includes(u))

@@ -1,16 +1,21 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { TokenRow, TagToken, AddDestination } from "@/components/alerts/notifications"
 import { SearchDestination } from "@/components/alerts/search-destination"
+import Sidebar from "@/components/sidebar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { ArrowLeft, LoaderCircle, CheckCircle2, ChevronDown, ChevronRight } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { ArrowLeft, LoaderCircle, CheckCircle2, ChevronDown, ChevronRight, Plus, X } from "lucide-react"
 import Link from "next/link"
 import { getSQLTemplate } from "@/lib/sql-templates"
 import "@/styles/alerts.css"
@@ -78,14 +83,22 @@ const costManagementTemplates: AlertTemplate[] = [
   },
   {
     id: "cost-spike",
-    name: "Cost Spike Detection",
+    name: "Anomalies",
     description: "Get alerted when costs exceed predefined thresholds",
+    sqlTemplate: "",
+    enabled: false
+  },
+  {
+    id: "budget-threshold-alerts",
+    name: "Budget Threshold Alerts",
+    description: "Monitor spending against custom budget thresholds",
     sqlTemplate: "",
     enabled: false
   }
 ]
 
 export default function CostManagementAlertsPage() {
+  const searchParams = useSearchParams()
   const [templateStates, setTemplateStates] = useState<Record<string, boolean>>({})
   const [inAppUsers, setInAppUsers] = useState<string[]>([])
   const [emailUsers, setEmailUsers] = useState<string[]>([])
@@ -94,14 +107,40 @@ export default function CostManagementAlertsPage() {
   const [externalDestinations, setExternalDestinations] = useState<string[]>([])
   const [isSaving, setIsSaving] = useState(false)
   const [showConfirmation, setShowConfirmation] = useState(false)
+  const [budgetThresholds, setBudgetThresholds] = useState<{[key: string]: string}>({
+    "Production": "10000",
+    "Development": "5000",
+    "Testing": "2000"
+  })
+  const [highlightedTemplate, setHighlightedTemplate] = useState<string | null>(null)
+  
+  // Channel visibility state
+  const [visibleChannels, setVisibleChannels] = useState<Set<string>>(new Set(['email']))
   
   // Expandable section states
   const [emailRolesExpanded, setEmailRolesExpanded] = useState(true)
   const [emailUsersExpanded, setEmailUsersExpanded] = useState(false)
-  const [inAppExpanded, setInAppExpanded] = useState(false)
+  const [inAppExpanded, setInAppExpanded] = useState(true)
   const [inAppRolesExpanded, setInAppRolesExpanded] = useState(true)
   const [inAppUsersExpanded, setInAppUsersExpanded] = useState(false)
-  const [externalExpanded, setExternalExpanded] = useState(false)
+  const [externalExpanded, setExternalExpanded] = useState(true)
+
+  // Handle highlight parameter from URL
+  useEffect(() => {
+    const highlight = searchParams.get('highlight')
+    if (highlight) {
+      setHighlightedTemplate(highlight)
+      // Pre-select the highlighted template
+      setTemplateStates(prev => ({
+        ...prev,
+        [highlight]: true
+      }))
+      // Set a timeout to remove the highlight after animation
+      setTimeout(() => {
+        setHighlightedTemplate(null)
+      }, 3000)
+    }
+  }, [searchParams])
 
   const handleTemplateToggle = (templateId: string, enabled: boolean) => {
     setTemplateStates(prev => ({
@@ -121,6 +160,49 @@ export default function CostManagementAlertsPage() {
   const removeEmailRole = (role: string) => setSelectedEmailRoles((prev) => prev.filter((r) => r !== role))
   const addInAppRole = (role: string) => setSelectedInAppRoles((prev) => (prev.includes(role) ? prev : [...prev, role]))
   const removeInAppRole = (role: string) => setSelectedInAppRoles((prev) => prev.filter((r) => r !== role))
+
+  // Channel management functions
+  const addChannel = (channelType: string) => {
+    setVisibleChannels(prev => new Set([...prev, channelType]))
+  }
+
+  const removeChannel = (channelType: string) => {
+    if (visibleChannels.size > 1) {
+      setVisibleChannels(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(channelType)
+        return newSet
+      })
+    }
+  }
+
+  const availableChannels = [
+    { id: 'inapp', label: 'In-App', disabled: visibleChannels.has('inapp') },
+    { id: 'external', label: 'External', disabled: visibleChannels.has('external') }
+  ].filter(channel => !channel.disabled)
+
+  const updateBudgetThreshold = (category: string, value: string) => {
+    setBudgetThresholds(prev => ({
+      ...prev,
+      [category]: value
+    }))
+  }
+
+  const addBudgetCategory = () => {
+    const newCategory = `Category ${Object.keys(budgetThresholds).length + 1}`
+    setBudgetThresholds(prev => ({
+      ...prev,
+      [newCategory]: "1000"
+    }))
+  }
+
+  const removeBudgetCategory = (category: string) => {
+    setBudgetThresholds(prev => {
+      const newThresholds = { ...prev }
+      delete newThresholds[category]
+      return newThresholds
+    })
+  }
 
   const EXTERNAL_DESTINATIONS = [
     "Webhook Destination 1", 
@@ -168,9 +250,12 @@ export default function CostManagementAlertsPage() {
   }
 
   return (
-    <div className="sf-theme min-h-screen bg-[var(--panel)] text-[var(--text)]">
-      {/* Header */}
-      <header className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-[var(--border)] bg-[var(--panel)]">
+    <div className="flex h-screen bg-gray-50">
+      <Sidebar />
+      
+      <div className="flex-1 flex flex-col overflow-hidden sf-theme bg-[var(--panel)] text-[var(--text)]">
+        {/* Header */}
+        <header className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-[var(--border)] bg-[var(--panel)]">
         <div className="flex items-center gap-3 min-w-0">
           <Link 
             href="/alerts"
@@ -211,8 +296,8 @@ export default function CostManagementAlertsPage() {
         </div>
       </header>
 
-      {/* Main Content - Same structure as other pages */}
-      <main className="max-w-6xl mx-auto p-6">
+        {/* Main Content - Same structure as other pages */}
+        <main className="flex-1 overflow-y-auto max-w-6xl mx-auto p-6">
         <div className="mb-8 flex items-center gap-4">
           <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-[var(--panel-3)] border border-[var(--border)]">
             <CostManagementIcon className="text-[var(--color-primary)]" />
@@ -234,6 +319,7 @@ export default function CostManagementAlertsPage() {
             <div className="space-y-3">
               {costManagementTemplates.map((template) => {
                 const isEnabled = templateStates[template.id] || false
+                const isHighlighted = highlightedTemplate === template.id
                 return (
                   <div 
                     key={template.id} 
@@ -241,26 +327,118 @@ export default function CostManagementAlertsPage() {
                       isEnabled 
                         ? 'border-[var(--color-primary)] bg-blue-50 shadow-md' 
                         : 'border-gray-300 bg-white hover:border-gray-400 hover:shadow-sm'
+                    } ${
+                      isHighlighted 
+                        ? 'ring-4 ring-yellow-300 ring-opacity-75 bg-yellow-50 border-yellow-400 animate-pulse' 
+                        : ''
                     }`}
                   >
                     <div className="flex items-start space-x-3 flex-1">
-                      <Checkbox 
+                      <Switch 
                         id={template.id}
                         checked={isEnabled}
                         onCheckedChange={(checked) => handleTemplateToggle(template.id, !!checked)}
                         className="mt-1"
                       />
                       <div className="flex-1">
-                        <Label htmlFor={template.id} className={`text-sm font-semibold cursor-pointer leading-tight ${
-                          isEnabled ? 'text-blue-800' : 'text-gray-900'
-                        }`}>
-                          {template.name}
-                        </Label>
+                        <div className="flex items-center gap-2">
+                          <Label htmlFor={template.id} className={`text-sm font-semibold cursor-pointer leading-tight ${
+                            isEnabled ? 'text-blue-800' : 'text-gray-900'
+                          }`}>
+                            {template.name}
+                          </Label>
+                          {template.id === "cost-spike" && (
+                            <Badge className="bg-gray-100 text-gray-600 text-xs">PREVIEW</Badge>
+                          )}
+                        </div>
                         <p className={`text-sm mt-2 leading-relaxed ${
                           isEnabled ? 'text-blue-700' : 'text-gray-600'
                         }`}>
                           {template.description}
                         </p>
+                        
+                        {/* Custom configuration for Budget Threshold Alerts - Expanded by default */}
+                        {template.id === "budget-threshold-alerts" && (
+                          <div className={`mt-4 p-4 rounded-lg transition-all duration-200 ${
+                            isEnabled 
+                              ? 'bg-blue-50 border border-blue-200' 
+                              : 'bg-gray-50 border border-gray-200'
+                          }`}>
+                            <div className="flex items-center justify-between mb-3">
+                              <Label className={`text-sm font-medium ${
+                                isEnabled ? 'text-blue-800' : 'text-gray-600'
+                              }`}>
+                                Budget Thresholds ($)
+                              </Label>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={addBudgetCategory}
+                                className={`h-7 px-2 text-xs ${
+                                  isEnabled 
+                                    ? 'border-blue-300 text-blue-700 hover:bg-blue-100' 
+                                    : 'border-gray-300 text-gray-600 hover:bg-gray-100'
+                                }`}
+                              >
+                                <Plus className="h-3 w-3 mr-1" />
+                                Add Category
+                              </Button>
+                            </div>
+                            <div className="space-y-2">
+                              {Object.entries(budgetThresholds).map(([category, threshold]) => (
+                                <div key={category} className="flex items-center gap-2">
+                                  <Input
+                                    value={category}
+                                    onChange={(e) => {
+                                      const newCategory = e.target.value
+                                      const oldThreshold = budgetThresholds[category]
+                                      setBudgetThresholds(prev => {
+                                        const newThresholds = { ...prev }
+                                        delete newThresholds[category]
+                                        newThresholds[newCategory] = oldThreshold
+                                        return newThresholds
+                                      })
+                                    }}
+                                    className={`flex-1 h-8 text-sm bg-white ${
+                                      isEnabled ? 'border-blue-300' : 'border-gray-300'
+                                    }`}
+                                    placeholder="Category name"
+                                  />
+                                  <span className={`text-sm ${
+                                    isEnabled ? 'text-blue-700' : 'text-gray-500'
+                                  }`}>$</span>
+                                  <Input
+                                    type="number"
+                                    min="0"
+                                    value={threshold}
+                                    onChange={(e) => updateBudgetThreshold(category, e.target.value)}
+                                    className={`w-32 h-8 text-sm bg-white ${
+                                      isEnabled ? 'border-blue-300' : 'border-gray-300'
+                                    }`}
+                                    placeholder="Budget"
+                                  />
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => removeBudgetCategory(category)}
+                                    className={`h-7 w-7 p-0 ${
+                                      isEnabled 
+                                        ? 'text-blue-600 hover:text-red-600 hover:bg-red-50' 
+                                        : 'text-gray-600 hover:text-red-600 hover:bg-red-50'
+                                    }`}
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                            <p className={`text-xs mt-2 ${
+                              isEnabled ? 'text-blue-600' : 'text-gray-500'
+                            }`}>
+                              Alert when spending reaches 80% of these budget thresholds
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
                     
@@ -283,29 +461,41 @@ export default function CostManagementAlertsPage() {
             </div>
           </div>
 
-          {/* Notification Channels - Same structure */}
+          {/* Notification Channels - Dynamic system */}
           <div>
             <h3 className="text-xl font-semibold text-gray-900 mb-6">Notification Channels</h3>
             <div className="space-y-6">
               
-              {/* Email Section */}
-              <div className="space-y-4 border border-[var(--border)] rounded-lg p-4 bg-[var(--panel-2)]">
-                <h4 className="text-lg font-semibold text-gray-800 flex items-center gap-3">
-                  <EmailIcon className="text-[var(--color-primary)]" />
-                  Email (Snowflake Users)
-                </h4>
-                
-                <div className="space-y-4 pl-3">
-                  <div className="space-y-3">
+              {/* Email Section - Always visible */}
+              {visibleChannels.has('email') && (
+                <div className="space-y-4 border border-gray-300 rounded-lg p-4 bg-gray-50 relative">
+                  <div className="flex items-center justify-between">
                     <button
                       onClick={() => setEmailRolesExpanded(!emailRolesExpanded)}
-                      className="flex items-center gap-2 text-left hover:text-[var(--color-primary)] transition-colors"
+                      className="flex items-center gap-2 text-left hover:text-blue-600 transition-colors"
                     >
-                      <h5 className="text-md font-medium text-gray-700">Roles</h5>
+                      <h4 className="text-lg font-semibold text-gray-800 flex items-center gap-3">
+                        <EmailIcon className="text-blue-600" />
+                        Email (Snowflake Users)
+                      </h4>
                       {emailRolesExpanded ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
                     </button>
-                    {emailRolesExpanded && (
-                      <>
+                    {visibleChannels.size > 1 && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-gray-400 hover:text-red-600"
+                        onClick={() => removeChannel('email')}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                  
+                  {emailRolesExpanded && (
+                    <div className="space-y-4 pl-3">
+                      <div className="space-y-3">
+                        <h5 className="text-md font-medium text-gray-700">Roles</h5>
                         <TokenRow label="" ariaLabel="Search and select roles for email notifications">
                           <SearchDestination options={ROLES} selected={selectedEmailRoles} onAdd={addEmailRole} placeholder="Search to add roles" />
                         </TokenRow>
@@ -316,126 +506,179 @@ export default function CostManagementAlertsPage() {
                             ))}
                           </div>
                         )}
-                      </>
-                    )}
-                  </div>
+                      </div>
 
-                  <div className="space-y-3">
-                    <button
-                      onClick={() => setEmailUsersExpanded(!emailUsersExpanded)}
-                      className="flex items-center gap-2 text-left hover:text-[var(--color-primary)] transition-colors"
-                    >
-                      <h5 className="text-md font-medium text-gray-700">Users</h5>
-                      {emailUsersExpanded ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
-                    </button>
-                    {emailUsersExpanded && (
-                      <>
-                        <TokenRow label="" ariaLabel="Add specific users for email notifications">
-                          <SearchDestination options={USER_OPTIONS} selected={emailUsers} onAdd={addEmailUser} />
-                        </TokenRow>
-                        {emailUsers.length > 0 && (
-                          <div className="min-h-[36px] flex flex-wrap gap-2">
-                            {emailUsers.map((u) => (
-                              <TagToken key={u} text={u} onRemove={() => removeEmailUser(u)} />
-                            ))}
-                          </div>
+                      <div className="space-y-3">
+                        <button
+                          onClick={() => setEmailUsersExpanded(!emailUsersExpanded)}
+                          className="flex items-center gap-2 text-left hover:text-blue-600 transition-colors"
+                        >
+                          <h5 className="text-md font-medium text-gray-700">Users</h5>
+                          {emailUsersExpanded ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
+                        </button>
+                        {emailUsersExpanded && (
+                          <>
+                            <TokenRow label="" ariaLabel="Add specific users for email notifications">
+                              <SearchDestination options={USER_OPTIONS} selected={emailUsers} onAdd={addEmailUser} />
+                            </TokenRow>
+                            {emailUsers.length > 0 && (
+                              <div className="min-h-[36px] flex flex-wrap gap-2">
+                                {emailUsers.map((u) => (
+                                  <TagToken key={u} text={u} onRemove={() => removeEmailUser(u)} />
+                                ))}
+                              </div>
+                            )}
+                          </>
                         )}
-                      </>
-                    )}
-                  </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
+              )}
 
               {/* In-App Section */}
-              <div className="space-y-4 border border-[var(--border)] rounded-lg p-4 bg-[var(--panel-2)]">
-                <button
-                  onClick={() => setInAppExpanded(!inAppExpanded)}
-                  className="w-full flex items-center justify-between text-left"
-                >
-                  <h4 className="text-lg font-semibold text-gray-800 flex items-center gap-3">
-                    <InAppIcon className="text-[var(--color-primary)]" />
-                    In-App (Snowsight)
-                  </h4>
-                  {inAppExpanded ? <ChevronDown className="h-5 w-5 text-gray-500" /> : <ChevronRight className="h-5 w-5 text-gray-500" />}
-                </button>
-                
-                {inAppExpanded && (
-                  <div className="space-y-4 pl-3">
-                    <div className="space-y-3">
-                      <button
-                        onClick={() => setInAppRolesExpanded(!inAppRolesExpanded)}
-                        className="flex items-center gap-2 text-left hover:text-[var(--color-primary)] transition-colors"
+              {visibleChannels.has('inapp') && (
+                <div className="space-y-4 border border-gray-300 rounded-lg p-4 bg-gray-50 relative">
+                  <div className="flex items-center justify-between">
+                    <button
+                      onClick={() => setInAppExpanded(!inAppExpanded)}
+                      className="flex items-center gap-2 text-left hover:text-blue-600 transition-colors"
+                    >
+                      <h4 className="text-lg font-semibold text-gray-800 flex items-center gap-3">
+                        <InAppIcon className="text-blue-600" />
+                        In-App (Snowsight)
+                      </h4>
+                      {inAppExpanded ? <ChevronDown className="h-5 w-5 text-gray-500" /> : <ChevronRight className="h-5 w-5 text-gray-500" />}
+                    </button>
+                    {visibleChannels.size > 1 && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-gray-400 hover:text-red-600"
+                        onClick={() => removeChannel('inapp')}
                       >
-                        <h5 className="text-md font-medium text-gray-700">Roles</h5>
-                        {inAppRolesExpanded ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
-                      </button>
-                      {inAppRolesExpanded && (
-                        <>
-                          <TokenRow label="" ariaLabel="Search and select roles for in-app notifications">
-                            <SearchDestination options={ROLES} selected={selectedInAppRoles} onAdd={addInAppRole} placeholder="Search to add roles" />
-                          </TokenRow>
-                          {selectedInAppRoles.length > 0 && (
-                            <div className="min-h-[36px] flex flex-wrap gap-2">
-                              {selectedInAppRoles.map((role) => (
-                                <TagToken key={role} text={role} onRemove={() => removeInAppRole(role)} />
-                              ))}
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
-
-                    <div className="space-y-3">
-                      <button
-                        onClick={() => setInAppUsersExpanded(!inAppUsersExpanded)}
-                        className="flex items-center gap-2 text-left hover:text-[var(--color-primary)] transition-colors"
-                      >
-                        <h5 className="text-md font-medium text-gray-700">Users</h5>
-                        {inAppUsersExpanded ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
-                      </button>
-                      {inAppUsersExpanded && (
-                        <>
-                          <TokenRow label="" ariaLabel="Add Snowsight users for in-app notifications">
-                            <SearchDestination options={USER_OPTIONS} selected={inAppUsers} onAdd={addInAppUser} />
-                          </TokenRow>
-                          {inAppUsers.length > 0 && (
-                            <div className="min-h-[36px] flex flex-wrap gap-2">
-                              {inAppUsers.map((u) => (
-                                <TagToken key={u} text={u} onRemove={() => removeInAppUser(u)} />
-                              ))}
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
-                )}
-              </div>
+                  
+                  {inAppExpanded && (
+                    <div className="space-y-4 pl-3">
+                      <div className="space-y-3">
+                        <button
+                          onClick={() => setInAppRolesExpanded(!inAppRolesExpanded)}
+                          className="flex items-center gap-2 text-left hover:text-blue-600 transition-colors"
+                        >
+                          <h5 className="text-md font-medium text-gray-700">Roles</h5>
+                          {inAppRolesExpanded ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
+                        </button>
+                        {inAppRolesExpanded && (
+                          <>
+                            <TokenRow label="" ariaLabel="Search and select roles for in-app notifications">
+                              <SearchDestination options={ROLES} selected={selectedInAppRoles} onAdd={addInAppRole} placeholder="Search to add roles" />
+                            </TokenRow>
+                            {selectedInAppRoles.length > 0 && (
+                              <div className="min-h-[36px] flex flex-wrap gap-2">
+                                {selectedInAppRoles.map((role) => (
+                                  <TagToken key={role} text={role} onRemove={() => removeInAppRole(role)} />
+                                ))}
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+
+                      <div className="space-y-3">
+                        <button
+                          onClick={() => setInAppUsersExpanded(!inAppUsersExpanded)}
+                          className="flex items-center gap-2 text-left hover:text-blue-600 transition-colors"
+                        >
+                          <h5 className="text-md font-medium text-gray-700">Users</h5>
+                          {inAppUsersExpanded ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
+                        </button>
+                        {inAppUsersExpanded && (
+                          <>
+                            <TokenRow label="" ariaLabel="Add Snowsight users for in-app notifications">
+                              <SearchDestination options={USER_OPTIONS} selected={inAppUsers} onAdd={addInAppUser} />
+                            </TokenRow>
+                            {inAppUsers.length > 0 && (
+                              <div className="min-h-[36px] flex flex-wrap gap-2">
+                                {inAppUsers.map((u) => (
+                                  <TagToken key={u} text={u} onRemove={() => removeInAppUser(u)} />
+                                ))}
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* External Section */}
-              <div className="space-y-4 border border-[var(--border)] rounded-lg p-4 bg-[var(--panel-2)]">
-                <button
-                  onClick={() => setExternalExpanded(!externalExpanded)}
-                  className="w-full flex items-center justify-between text-left"
-                >
-                  <h4 className="text-lg font-semibold text-gray-800 flex items-center gap-3">
-                    <ExternalIcon className="text-[var(--color-primary)]" />
-                    External
-                  </h4>
-                  {externalExpanded ? <ChevronDown className="h-5 w-5 text-gray-500" /> : <ChevronRight className="h-5 w-5 text-gray-500" />}
-                </button>
-                
-                {externalExpanded && (
-                  <div className="space-y-3 pl-8">
-                    <TokenRow label="External notification destinations">
-                      {externalDestinations.map((d) => (
-                        <TagToken key={d} text={d} onRemove={() => removeExternalDestination(d)} />
-                      ))}
-                      <AddDestination onAdd={addExternalDestination} options={EXTERNAL_DESTINATIONS} />
-                    </TokenRow>
+              {visibleChannels.has('external') && (
+                <div className="space-y-4 border border-gray-300 rounded-lg p-4 bg-gray-50 relative">
+                  <div className="flex items-center justify-between">
+                    <button
+                      onClick={() => setExternalExpanded(!externalExpanded)}
+                      className="flex items-center gap-2 text-left hover:text-blue-600 transition-colors"
+                    >
+                      <h4 className="text-lg font-semibold text-gray-800 flex items-center gap-3">
+                        <ExternalIcon className="text-blue-600" />
+                        External
+                      </h4>
+                      {externalExpanded ? <ChevronDown className="h-5 w-5 text-gray-500" /> : <ChevronRight className="h-5 w-5 text-gray-500" />}
+                    </button>
+                    {visibleChannels.size > 1 && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-gray-400 hover:text-red-600"
+                        onClick={() => removeChannel('external')}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
-                )}
-              </div>
+                  
+                  {externalExpanded && (
+                    <div className="space-y-3 pl-3">
+                      <TokenRow label="External notification destinations">
+                        {externalDestinations.map((d) => (
+                          <TagToken key={d} text={d} onRemove={() => removeExternalDestination(d)} />
+                        ))}
+                        <AddDestination onAdd={addExternalDestination} options={EXTERNAL_DESTINATIONS} />
+                      </TokenRow>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* More Channels Button */}
+              {availableChannels.length > 0 && (
+                <div className="flex justify-center">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="flex items-center gap-2">
+                        <Plus className="h-4 w-4" />
+                        More channels
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      {availableChannels.map((channel) => (
+                        <DropdownMenuItem 
+                          key={channel.id}
+                          onClick={() => addChannel(channel.id)}
+                          className="cursor-pointer"
+                        >
+                          {channel.label}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              )}
             </div>
           </div>
 
@@ -529,7 +772,8 @@ export default function CostManagementAlertsPage() {
             </Button>
           </div>
         </div>
-      </main>
+        </main>
+      </div>
 
       {/* Success Confirmation Dialog */}
       <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>

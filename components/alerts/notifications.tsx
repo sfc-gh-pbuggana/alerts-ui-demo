@@ -239,19 +239,19 @@ export function AddDestination({ onAdd, options }: { onAdd: (name: string) => vo
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="text-xs px-2 py-1 rounded-md border border-dashed border-[var(--border)] text-[var(--color-mid-blue)] hover:text-[var(--color-primary)] hover:border-[var(--color-primary)]">
+        <button className="text-xs px-2 py-1 rounded-md border border-dashed border-gray-300 text-blue-600 hover:text-blue-700 hover:border-blue-600">
           + Add destination
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="bg-white text-[var(--text)] border-[var(--border)] min-w-[260px]">
-        <DropdownMenuLabel className="text-xs text-[var(--subtle-text)]">Quick add</DropdownMenuLabel>
+      <DropdownMenuContent className="bg-white text-gray-900 border-gray-200 min-w-[260px]">
+        <DropdownMenuLabel className="text-xs text-gray-600">Quick add</DropdownMenuLabel>
         {options.map((opt) => (
           <DropdownMenuItem key={opt} onClick={() => onAdd(opt)} className="cursor-pointer">
             {opt}
           </DropdownMenuItem>
         ))}
-        <DropdownMenuSeparator className="bg-[var(--border)]" />
-        <DropdownMenuItem className="cursor-pointer text-[var(--color-primary)]" onClick={() => setOpen(true)}>Set up new channel</DropdownMenuItem>
+        <DropdownMenuSeparator className="bg-gray-200" />
+        <DropdownMenuItem className="cursor-pointer text-blue-600" onClick={() => setOpen(true)}>Set up new channel</DropdownMenuItem>
       </DropdownMenuContent>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -288,7 +288,7 @@ export function AddDestination({ onAdd, options }: { onAdd: (name: string) => vo
                     <Switch
                       checked={isInbound}
                       onCheckedChange={setIsInbound}
-                      className="data-[state=checked]:bg-[var(--color-primary)]"
+                      className="data-[state=checked]:bg-blue-600"
                     />
                     <span className="text-sm">{isInbound ? "Inbound" : "Outbound"}</span>
                   </div>
@@ -311,7 +311,7 @@ export function AddDestination({ onAdd, options }: { onAdd: (name: string) => vo
 
           <div className="flex items-center justify-end gap-2 mt-4">
             <Button variant="outline" onClick={onTest}>Send me a Test Notification</Button>
-            <Button className="h-9 bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] active:bg-[var(--color-primary-pressed)]" onClick={onSave}>Save Notification Channel</Button>
+            <Button className="h-9 bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800" onClick={onSave}>Save Notification Channel</Button>
           </div>
         </DialogContent>
       </Dialog>
