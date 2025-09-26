@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -97,7 +97,7 @@ const costManagementTemplates: AlertTemplate[] = [
   }
 ]
 
-export default function CostManagementAlertsPage() {
+function CostManagementAlertsPageContent() {
   const searchParams = useSearchParams()
   const [templateStates, setTemplateStates] = useState<Record<string, boolean>>({})
   const [inAppUsers, setInAppUsers] = useState<string[]>([])
@@ -807,5 +807,13 @@ export default function CostManagementAlertsPage() {
         </DialogContent>
       </Dialog>
     </div>
+  )
+}
+
+export default function CostManagementAlertsPage() {
+  return (
+    <Suspense fallback={<div className="flex h-screen bg-gray-50 items-center justify-center">Loading...</div>}>
+      <CostManagementAlertsPageContent />
+    </Suspense>
   )
 }
